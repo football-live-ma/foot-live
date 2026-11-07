@@ -105,14 +105,14 @@ const LEAGUES={
   eng:{flag:'🇬🇧',short:'Premier League',name:'Premier League',src:'espn',slug:'eng.1',tvKey:'premier league',tvDef:['beIN Sports'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
   fra:{flag:'🇫🇷',short:'Ligue 1',name:'Ligue 1',src:'espn',slug:'fra.1',tvKey:'ligue 1',tvDef:['beIN Sports'],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]},
   ita:{flag:'🇮🇹',short:'Serie A',name:'Serie A',src:'espn',slug:'ita.1',tvKey:'serie a',tvDef:['StarzPlay'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
-  ger:{flag:'🇩🇪',short:'Bundesliga',name:'Bundesliga',src:'espn',slug:'ger.1',tvKey:'bundesliga',tvDef:[],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]}
+  ger:{flag:'🇩🇪',short:'Bundesliga',name:'Bundesliga',src:'espn',slug:'ger.1',tvKey:'bundesliga',tvDef:['Shahid','MBC Action (certains matchs, gratuit)'],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]}
 };
 const STAGES={'first-preliminary-round':'Tour préliminaire 1','second-preliminary-round':'Tour préliminaire 2','group-stage':'Phase de groupes','league-phase':'Phase de ligue','knockout-round-playoffs':'Barrages','round-of-16':'8es de finale','quarterfinals':'Quarts de finale','semifinals':'Demi-finales','finals':'Finale','final':'Finale'};
 
 const $=s=>document.querySelector(s);
 const store={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
   set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S={view:'matchs',lg:store.get('lg','botola'),filter:'all',team:'',round:'',
+const S={view:'matchs',lg:store.get('lg','botola'),filter:'all',team:'',round:'',ch:'',
   ev:{},tb:{},upd:{},err:{},busy:{},
   tvmap:store.get('tvmap',''),favs:store.get('favs',[])};
 if(!LEAGUES[S.lg])S.lg='botola';
@@ -246,6 +246,9 @@ function vMatchs(){
   const rk=[];all.forEach(e=>{if(e.rk&&!rk.find(r=>r[0]===e.rk))rk.push([e.rk,e.rl||e.rm])});
   if(S.team)ev=ev.filter(e=>(e.home+' '+e.away).toLowerCase().includes(S.team.toLowerCase()));
   if(S.round)ev=ev.filter(e=>e.rk===S.round);
+  const chs=[...new Set(all.flatMap(channels))].sort();
+  if(S.ch&&!chs.includes(S.ch))S.ch='';
+  if(S.ch)ev=ev.filter(e=>channels(e).includes(S.ch));
   const f=S.filter;
   if(f==='live')ev=ev.filter(e=>e.st==='live');
   else if(f==='next')ev=ev.filter(e=>e.st==='pre');
@@ -254,7 +257,8 @@ function vMatchs(){
   else if(f==='all'&&!S.team&&!S.round)ev=ev.filter(e=>e.ts>now-3*864e5&&e.ts<now+21*864e5);
   const chips=[['all','Récents'],['live','En direct'],['next','À venir'],['past','Résultats'],['fav','★ Favoris']].map(([c,l])=>`<div class="chip ${f===c?'on':''}" data-f="${c}">${l}</div>`).join('');
   let h=`<div class="chips">${chips}</div><div class="bar"><input id="q" placeholder="Rechercher un club…" value="${esc(S.team)}">
-  <select id="rd"><option value="">Toute la saison</option>${rk.map(r=>`<option value="${esc(r[0])}" ${S.round===r[0]?'selected':''}>${esc(r[1]||r[0])}</option>`).join('')}</select></div>`;
+  <select id="rd"><option value="">Toute la saison</option>${rk.map(r=>`<option value="${esc(r[0])}" ${S.round===r[0]?'selected':''}>${esc(r[1]||r[0])}</option>`).join('')}</select></div>
+  ${chs.length>1?`<div class="bar"><select id="chf"><option value="">📺 Toutes les chaînes</option>${chs.map(c=>`<option value="${esc(c)}" ${S.ch===c?'selected':''}>📺 ${esc(c)}</option>`).join('')}</select></div>`:''}`;
   if(!ev.length){
     const msg=all.length?'Aucun match pour ce filtre.':S.err[k]?`Impossible de charger les données (${esc(S.err[k])}).<br><br><button class="btn" id="rt">Réessayer</button>`:S.busy[k]?'Chargement…':'Aucun match trouvé.';
     return h+`<div class="empty">${msg}</div>`}
@@ -293,9 +297,10 @@ function bind(){
   document.querySelectorAll('.m').forEach(c=>c.onclick=ev=>{if(!ev.target.closest('[data-fav]'))c.classList.toggle('open')});
   document.querySelectorAll('[data-fav]').forEach(a=>a.onclick=()=>{const t=a.dataset.fav;S.favs=S.favs.includes(t)?S.favs.filter(x=>x!==t):[...S.favs,t];store.set('favs',S.favs);render()});
   document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{S.filter=c.dataset.f;render()});
-  document.querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{S.lg=c.dataset.lg;S.round='';S.team='';S.filter='all';store.set('lg',S.lg);render();load(false)});
+  document.querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{S.lg=c.dataset.lg;S.round='';S.team='';S.ch='';S.filter='all';store.set('lg',S.lg);render();load(false)});
   const q=$('#q');if(q)q.oninput=()=>{S.team=q.value;const p=q.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)};
   const rd=$('#rd');if(rd)rd.onchange=()=>{S.round=rd.value;render()};
+  const chf=$('#chf');if(chf)chf.onchange=()=>{S.ch=chf.value;render()};
   const st=$('#st');if(st)st.onclick=()=>{S.tvmap=$('#tv').value;store.set('tvmap',S.tvmap);render()};
   const cf=$('#cf');if(cf)cf.onclick=()=>{S.favs=[];store.set('favs',[]);render()};
   const rt=$('#rt');if(rt)rt.onclick=()=>load(true);
