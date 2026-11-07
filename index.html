@@ -98,7 +98,7 @@ td b{color:#fff}
 
 <script>
 /* ============ CONFIG (ajouter un championnat = ajouter une ligne) ============ */
-const VERSION='2026-11-07.3'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
+const VERSION='2026-11-07.4'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
 const TZ='Africa/Casablanca';
 const TSDB='https://www.thesportsdb.com/api/v1/json/123/';
 const ESPN='https://site.api.espn.com/apis/site/v2/sports/soccer/';
@@ -209,7 +209,7 @@ async function loadTsdb(k,full){
     // 1) classement complet préparé par GitHub Actions (Wikipédia), 2) sinon TheSportsDB (top 5 seulement en gratuit)
     let ok=false;
     if(k==='botola')try{const d=await jget(`botola.json?_=${Date.now()}`,1);
-      if(d&&d.rows&&d.rows.length>=8){S.tb[k]=[{name:'',src:'wiki',update:d.update,rows:d.rows}];ok=true}}catch(e){}
+      if(d&&d.rows&&d.rows.length>=8){S.tb[k]=[{name:'',src:'wiki',srcName:/fotmob/i.test(d.source||'')?'FotMob':'Wikipédia',update:d.update,rows:d.rows}];ok=true}}catch(e){}
     if(!ok)try{const d=await jget(`${TSDB}lookuptable.php?l=${L.id}&s=${season()}`,1);
       if(d&&d.table&&d.table.length)S.tb[k]=[{name:'',rows:d.table.map(r=>({n:r.strTeam,b:r.strBadge||r.strTeamBadge||'',p:+r.intPlayed,w:+r.intWin,d:+r.intDraw,l:+r.intLoss,gf:+r.intGoalsFor,ga:+r.intGoalsAgainst,pts:+r.intPoints}))}]}catch(e){}}
   if(fails&&!S.ev[k].length)throw last||new Error('réseau')}
@@ -330,7 +330,7 @@ function vClassement(){
   ${g.rows.map((r,i)=>`<tr class="${i<L.zones.a?'z1':i<L.zones.a+L.zones.b?'z2':L.zones.r&&i>=n-L.zones.r?'zr':''}"><td>${i+1}</td>
   <td class="n">${badge(r.b,r.n)}${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table>`};
   const leg=L.leg.map(([c,t])=>`<span style="color:${c}">■ ${t}</span>`).join('');
-  return gs.map(tbl).join('')+`<div class="leg">${leg}</div><div class="leg">${calc?'Classement calculé à partir des résultats disponibles':gs[0].src==='wiki'?'Classement complet (source : Wikipédia / FRMF)'+(gs[0].update?', mis à jour le '+esc(new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric'}).format(Date.parse(gs[0].update))):''):L.src==='tsdb'&&gs[0].rows.length<8?'Top '+gs[0].rows.length+' uniquement (limite de la source gratuite)':'Classement officiel'}</div>`}
+  return gs.map(tbl).join('')+`<div class="leg">${leg}</div><div class="leg">${calc?'Classement calculé à partir des résultats disponibles':gs[0].src==='wiki'?'Classement complet (source : '+esc(gs[0].srcName||'Wikipédia')+')'+(gs[0].update?', mis à jour le '+esc(new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric'}).format(Date.parse(gs[0].update))):''):L.src==='tsdb'&&gs[0].rows.length<8?'Top '+gs[0].rows.length+' uniquement (limite de la source gratuite)':'Classement officiel'}</div>`}
 
 function vReglages(){
   return`<div class="panel"><h3>Chaînes TV</h3>
