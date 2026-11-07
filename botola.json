@@ -9,20 +9,20 @@
    "w": 5,
    "d": 1,
    "l": 1,
-   "gf": 9,
-   "ga": 5,
+   "gf": 10,
+   "ga": 6,
    "pts": 16,
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102042.png"
   },
   {
    "n": "CODM Meknès",
-   "p": 6,
-   "w": 3,
+   "p": 7,
+   "w": 4,
    "d": 2,
    "l": 1,
-   "gf": 9,
+   "gf": 10,
    "ga": 4,
-   "pts": 11,
+   "pts": 14,
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102032.png"
   },
   {
@@ -31,10 +31,21 @@
    "w": 3,
    "d": 2,
    "l": 2,
+   "gf": 7,
+   "ga": 6,
+   "pts": 11,
+   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102050.png"
+  },
+  {
+   "n": "MAS Fès",
+   "p": 7,
+   "w": 3,
+   "d": 2,
+   "l": 2,
    "gf": 6,
    "ga": 5,
    "pts": 11,
-   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102050.png"
+   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102043.png"
   },
   {
    "n": "Ittihad Tanger",
@@ -103,24 +114,13 @@
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102033.png"
   },
   {
-   "n": "MAS Fès",
-   "p": 6,
-   "w": 2,
-   "d": 2,
-   "l": 2,
-   "gf": 5,
-   "ga": 5,
-   "pts": 8,
-   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102043.png"
-  },
-  {
    "n": "FUS Rabat",
-   "p": 6,
+   "p": 7,
    "w": 2,
    "d": 2,
-   "l": 2,
+   "l": 3,
    "gf": 4,
-   "ga": 4,
+   "ga": 5,
    "pts": 8,
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102036.png"
   },
@@ -159,12 +159,12 @@
   },
   {
    "n": "MAT Tetouan",
-   "p": 6,
+   "p": 7,
    "w": 0,
    "d": 3,
-   "l": 3,
+   "l": 4,
    "gf": 2,
-   "ga": 9,
+   "ga": 10,
    "pts": 3,
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102044.png"
   },
