@@ -1,70 +1,83 @@
-// Trouve les logos des équipes qu'ESPN n'a pas (CAF, Botola) et les écrit dans logos.json :
-// { "Nom affiché dans l'app": "https://...png" }. Lancé par GitHub Actions, lentement (limite gratuite TheSportsDB).
+// Trouve les logos des équipes qu'ESPN n'a pas (CAF surtout) et les écrit dans logos.json :
+// { "Nom affiché dans l'app": "https://...png" }. Source : FotMob, secours TheSportsDB.
+// Lancé automatiquement par GitHub Actions.
 import { readFile, writeFile } from 'node:fs/promises';
 
+const UA = 'Mozilla/5.0 (FootLive; https://github.com/football-live-ma/foot-live)';
 const OUT = new URL('../../logos.json', import.meta.url);
 const BOTOLA = new URL('../../botola.json', import.meta.url);
 const TSDB = 'https://www.thesportsdb.com/api/v1/json/123/';
 const ESPN = 'https://site.api.espn.com/apis/site/v2/sports/soccer/';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const MAX_LOOKUPS = 90; // par exécution, pour rester sous la limite gratuite
+const MAX_NEW = 120; // équipes recherchées par exécution
+const fotmobLogo = id => `https://images.fotmob.com/image_resources/logo/teamlogo/${id}.png`;
 
-// Noms différents entre ESPN / Wikipédia et TheSportsDB
+// Noms différents entre ESPN / TheSportsDB et FotMob
 const ALIAS = {
   'Maghreb As De Fès': 'Maghreb Fes', 'MAS Fez': 'Maghreb Fes',
-  'RSB Berkane': 'RS Berkane',
+  'RSB Berkane': 'RS Berkane', 'Renaissance Berkane': 'RS Berkane',
   'Colombe Sportiv Du Dja Et Lobo': 'Colombe du Dja et Lobo',
-  'Raja CA': 'Raja Casablanca', 'Wydad AC': 'Wydad Casablanca',
-  'AS FAR': 'FAR Rabat', 'HUS Agadir': 'Hassania Agadir',
-  'DH El Jadida': 'Difaa El Jadida', 'COD Meknes': 'CODM Meknes',
-  'KAC Marrakech': 'Kawkab Marrakech', 'MA Tétouan': 'Moghreb Tetouan',
-  'IR Tanger': 'Ittihad Tanger', 'Al Hilal Omdurman': 'Al-Hilal Omdurman',
+  'Esperance Sportive de Tunis': 'Esperance Tunis',
+  'Petro de Luanda': 'Petro Atletico', 'Scottland Mabvuku': 'Scottland FC',
 };
 
-async function json(url) {
-  const r = await fetch(url);
+async function get(url) {
+  const r = await fetch(url, { headers: { 'User-Agent': UA } });
   const t = await r.text();
-  if (/^error code/i.test(t) || r.status === 429) throw new Error('limite TheSportsDB');
-  if (!r.ok) throw new Error(`HTTP ${r.status} ${url}`);
+  if (!r.ok || /^error code/i.test(t)) throw new Error(`HTTP ${r.status}`);
   return JSON.parse(t);
 }
 
-// 1. Liste des équipes à couvrir
+async function fotmob(q) {
+  const d = await get(`https://www.fotmob.com/api/data/search/suggest?term=${encodeURIComponent(q)}&lang=en`);
+  const team = (d[0]?.suggestions || []).find(s => s.type === 'team');
+  return team ? fotmobLogo(team.id) : '';
+}
+async function tsdb(q) {
+  const t = ((await get(`${TSDB}searchteams.php?t=${encodeURIComponent(q)}`)).teams || [])
+    .find(x => x.strSport === 'Soccer' && (x.strBadge || x.strTeamBadge));
+  return t ? (t.strBadge || t.strTeamBadge) : '';
+}
+
+// 1. Équipes à couvrir : CAF (ESPN, sans logos), Botola (TheSportsDB + botola.json)
 const names = new Set();
 const y = new Date().getUTCFullYear();
 for (const yy of [y - 1, y, y + 1]) {
   try {
-    const d = await json(`${ESPN}caf.champions/scoreboard?dates=${yy}&limit=1000`);
+    const d = await get(`${ESPN}caf.champions/scoreboard?dates=${yy}&limit=1000`);
     for (const e of d.events || []) for (const c of (e.competitions?.[0]?.competitors || [])) names.add(c.team.displayName);
   } catch (e) { console.warn('ESPN', yy, e.message); }
 }
-try { (JSON.parse(await readFile(BOTOLA, 'utf8')).rows || []).forEach(r => names.add(r.n)); } catch {}
+let botolaLogos = {};
+try { for (const r of JSON.parse(await readFile(BOTOLA, 'utf8')).rows || []) if (r.b) botolaLogos[r.n] = r.b; } catch {}
 try {
-  const d = await json(`${TSDB}eventsnextleague.php?id=4520`);
+  const d = await get(`${TSDB}eventsnextleague.php?id=4520`);
   for (const e of d.events || []) { names.add(e.strHomeTeam); names.add(e.strAwayTeam); }
-} catch (e) { console.warn('TSDB events', e.message); }
-await sleep(3000);
+} catch (e) { console.warn('TheSportsDB', e.message); }
 
-// 2. Recherche des logos manquants
+// 2. Recherche
 let logos = {};
 try { logos = JSON.parse(await readFile(OUT, 'utf8')); } catch {}
+Object.assign(logos, botolaLogos);
 const variants = n => [...new Set([ALIAS[n], n,
   n.replace(/\b(FC|SC|AC|AS|CF|CS|RSB|Club|Sportiv|Sporting)\b\.?/gi, ' ').replace(/\s+/g, ' ').trim()])]
   .filter(v => v && v.length > 2);
 
-let lookups = 0, found = 0, blocked = false;
+let tried = 0, found = 0, tsdbOk = true;
 for (const n of [...names].filter(Boolean).sort()) {
-  if (logos[n]) continue;
-  if (lookups >= MAX_LOOKUPS || blocked) break;
+  if (logos[n] || tried >= MAX_NEW) continue;
+  tried++;
+  let url = '';
   for (const v of variants(n)) {
-    lookups++;
-    try {
-      const t = ((await json(`${TSDB}searchteams.php?t=${encodeURIComponent(v)}`)).teams || [])
-        .find(x => x.strSport === 'Soccer' && (x.strBadge || x.strTeamBadge));
-      if (t) { logos[n] = t.strBadge || t.strTeamBadge; found++; await sleep(3000); break; }
-    } catch (e) { console.warn(n, e.message); if (/limite/.test(e.message)) blocked = true; await sleep(3000); break; }
+    try { url = await fotmob(v); } catch (e) { console.warn('FotMob', n, e.message); }
+    await sleep(800);
+    if (url) break;
+  }
+  if (!url && tsdbOk) {
+    try { url = await tsdb(ALIAS[n] || n); } catch (e) { console.warn('TheSportsDB', n, e.message); tsdbOk = false; }
     await sleep(3000);
   }
+  if (url) { logos[n] = url; found++; }
 }
 
 const sorted = Object.fromEntries(Object.entries(logos).filter(([, v]) => v).sort());
