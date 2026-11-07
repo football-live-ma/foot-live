@@ -43,7 +43,11 @@ main{max-width:760px;margin:0 auto;padding:12px calc(12px + env(safe-area-inset-
 .t{flex:1;display:flex;align-items:center;gap:6px;min-width:0;flex-direction:column;text-align:center;font-size:13px}
 .t span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.2;word-break:break-word}
 .t img{width:34px;height:34px;object-fit:contain}
-.ph{width:34px;height:34px;border-radius:50%;background:#2a4136;display:inline-block;flex:none}
+.ph{width:34px;height:34px;border-radius:50%;background:#2a4136;display:inline-flex;align-items:center;justify-content:center;flex:none;font-style:normal;font-weight:700;font-size:11px;color:#cfe3d8;letter-spacing:.02em}
+.mini{background:var(--card);border:1px solid var(--line);color:var(--txt);min-height:44px;padding:0 12px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap}
+.mini.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.bar input[type=date]{color-scheme:dark}
+.lgt{color:#cfe3d8}
 .sc{min-width:64px;text-align:center;font-weight:700;font-size:17px}
 .sc small{display:block;font-weight:400;font-size:11px;color:var(--mut)}
 .live{color:var(--live)}
@@ -60,7 +64,7 @@ th,td{padding:8px 3px;text-align:center;border-bottom:1px solid var(--line)}
 th{color:var(--mut);font-weight:500;font-size:11px}
 td.n{text-align:left;display:flex;gap:6px;align-items:center}
 td.n img{width:20px;height:20px;object-fit:contain}
-td.n .ph{width:20px;height:20px}
+td.n .ph{width:20px;height:20px;font-size:8px}
 td b{color:#fff}
 .z1 td:first-child{box-shadow:inset 3px 0 var(--grn)}
 .z2 td:first-child{box-shadow:inset 3px 0 #3b82f6}
@@ -94,6 +98,7 @@ td b{color:#fff}
 
 <script>
 /* ============ CONFIG (ajouter un championnat = ajouter une ligne) ============ */
+const VERSION='2026-11-07.2'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
 const TZ='Africa/Casablanca';
 const TSDB='https://www.thesportsdb.com/api/v1/json/123/';
 const ESPN='https://site.api.espn.com/apis/site/v2/sports/soccer/';
@@ -112,7 +117,7 @@ const STAGES={'first-preliminary-round':'Tour préliminaire 1','second-prelimina
 const $=s=>document.querySelector(s);
 const store={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
   set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const S={view:'matchs',lg:store.get('lg','botola'),filter:'all',team:'',round:'',ch:'',
+const S={view:'matchs',lg:store.get('lg','botola'),filter:'all',team:'',round:'',ch:'',date:'',glob:false,logos:store.get('logos',{}),
   ev:{},tb:{},upd:{},err:{},busy:{},
   tvmap:store.get('tvmap',''),favs:store.get('favs',[])};
 if(!LEAGUES[S.lg])S.lg='botola';
@@ -221,31 +226,62 @@ function computeTable(k){
 
 /* ============ AFFICHAGE ============ */
 function channels(e){
-  const L=LEAGUES[S.lg],out=new Set([...(L.tvDef||[]),...e.tv]);
+  const L=LEAGUES[e.lg||S.lg],out=new Set([...(L.tvDef||[]),...e.tv]);
   S.tvmap.split('\n').forEach(l=>{const[k,v]=l.split('=').map(x=>x&&x.trim());
     if(k&&v&&[L.tvKey,e.home.toLowerCase(),e.away.toLowerCase()].includes(k.toLowerCase()))v.split(/[,;/]/).forEach(x=>x.trim()&&out.add(x.trim()))});
   return[...out]}
-const badge=u=>u?`<img src="${esc(u)}" loading="lazy" onerror="this.outerHTML='<i class=ph></i>'">`:'<i class="ph"></i>';
+/* Logos : si l'image manque, on affiche les initiales et on cherche le logo sur TheSportsDB (1 requête / 3 s, mis en cache) */
+const initials=n=>String(n||'?').replace(/\b(FC|SC|AC|AS|CF|CD|RC|US|SL|CS)\b\.?/g,' ').trim().split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?';
+const ph=n=>`<i class="ph">${esc(initials(n))}</i>`;
+function badge(u,n){
+  const c=n?S.logos[n]:undefined,src=c||u;
+  if(!src){if(n&&c===undefined)queueLogo(n);return ph(n)}
+  return`<img src="${esc(src)}" loading="lazy" alt="" data-n="${esc(n||'')}" onerror="logoFail(this)">`}
+function logoFail(img){const n=img.dataset.n;img.outerHTML=ph(n);if(n&&S.logos[n]===undefined)queueLogo(n)}
+const LQ=[];let lqRun=false,lqT=0;
+function queueLogo(n){if(!LQ.includes(n))LQ.push(n);if(!lqRun)runLQ()}
+async function runLQ(){
+  lqRun=true;let fails=0;
+  while(LQ.length&&fails<3){
+    while(Object.values(S.busy).some(Boolean))await sleep(1000);
+    const n=LQ.shift();if(S.logos[n]!==undefined)continue;
+    const vars=[...new Set([n,n.replace(/\b(FC|SC|AC|AS|CF|RSB|CS|Club|Sportiv)\b\.?/gi,' ').replace(/\s+/g,' ').trim()])].filter(v=>v.length>2);
+    let url='',ok=true;
+    for(const v of vars){
+      try{const r=await fetch(`${TSDB}searchteams.php?t=${encodeURIComponent(v)}`);if(!r.ok)throw 0;
+        const t=((await r.json()).teams||[]).find(x=>x.strSport==='Soccer');
+        if(t&&(t.strBadge||t.strTeamBadge)){url=t.strBadge||t.strTeamBadge;break}}
+      catch(e){ok=false;break}
+      await sleep(4000)}
+    if(ok){fails=0;S.logos[n]=url;store.set('logos',S.logos);clearTimeout(lqT);lqT=setTimeout(render,600)}
+    else{fails++;LQ.push(n);await sleep(30000)}
+    await sleep(4000)}
+  lqRun=false}
 function card(e){
   const live=e.st==='live',fin=e.st==='fin',ch=channels(e);
   const sc=(live||fin)&&e.hs!=null&&!isNaN(e.hs)?`${e.hs} - ${e.as}`:fmtHour(e.ts);
   const sub=live?`<span class="live">${esc(e.prog)}</span>`:esc(e.prog||(fin?'Terminé':''));
   const fh=S.favs.includes(e.home)||S.favs.includes(e.away);
-  return`<div class="m"><div class="row"><div class="t">${badge(e.hb)}<span>${esc(e.home)}</span></div>
+  const LL=LEAGUES[e.lg||S.lg];
+  return`<div class="m"><div class="row"><div class="t">${badge(e.hb,e.home)}<span>${esc(e.home)}</span></div>
   <div class="sc">${sc}<small>${sub}</small></div>
-  <div class="t r">${badge(e.ab)}<span>${esc(e.away)}</span></div></div>
-  <div class="meta">${fh?'<span class="fav">★</span>':''}${e.rl?`<span>${esc(e.rl)}</span>`:''}${ch.map(c=>`<span class="tv">📺 ${esc(c)}</span>`).join('')}${e.venue?`<span>🏟 ${esc(e.venue)}</span>`:''}</div>
+  <div class="t r">${badge(e.ab,e.away)}<span>${esc(e.away)}</span></div></div>
+  <div class="meta">${fh?'<span class="fav">★</span>':''}${S.glob?`<span class="lgt">${LL.flag} ${esc(LL.short)}</span>`:''}${e.rl?`<span>${esc(e.rl)}</span>`:''}${ch.map(c=>`<span class="tv">📺 ${esc(c)}</span>`).join('')}${e.venue?`<span>🏟 ${esc(e.venue)}</span>`:''}</div>
   <div class="det">📅 ${esc(fmtDay(e.ts))} à ${fmtHour(e.ts)} (heure du Maroc)<br>
   ${e.venue?'🏟 '+esc(e.venue)+(e.city?', '+esc(e.city):'')+'<br>':''}
   ${e.notes?'ℹ️ '+esc(e.notes)+'<br>':''}
   ${ch.length?'📺 Diffusion : '+esc(ch.join(', ')):'📺 Chaîne non communiquée (à ajouter dans Réglages)'}<br>
   <a data-fav="${esc(e.home)}">★ Suivre ${esc(e.home)}</a> · <a data-fav="${esc(e.away)}">★ Suivre ${esc(e.away)}</a></div></div>`}
 
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 function vMatchs(){
-  const k=S.lg,all=S.ev[k],now=Date.now();let ev=all;
-  const rk=[];all.forEach(e=>{if(e.rk&&!rk.find(r=>r[0]===e.rk))rk.push([e.rk,e.rl||e.rm])});
-  if(S.team)ev=ev.filter(e=>(e.home+' '+e.away).toLowerCase().includes(S.team.toLowerCase()));
-  if(S.round)ev=ev.filter(e=>e.rk===S.round);
+  const k=S.lg,now=Date.now(),glob=S.glob=!!(S.team||S.date);
+  const all=glob?Object.keys(LEAGUES).flatMap(x=>S.ev[x].map(e=>({...e,lg:x}))).sort((a,b)=>a.ts-b.ts):S.ev[k].map(e=>({...e,lg:k}));
+  let ev=all;
+  const rk=[];if(!glob)all.forEach(e=>{if(e.rk&&!rk.find(r=>r[0]===e.rk))rk.push([e.rk,e.rl||e.rm])});
+  if(S.team){const q=norm(S.team);ev=ev.filter(e=>norm(e.home+' '+e.away).includes(q))}
+  if(S.date)ev=ev.filter(e=>dayKey(e.ts)===S.date);
+  if(!glob&&S.round)ev=ev.filter(e=>e.rk===S.round);
   const chs=[...new Set(all.flatMap(channels))].sort();
   if(S.ch&&!chs.includes(S.ch))S.ch='';
   if(S.ch)ev=ev.filter(e=>channels(e).includes(S.ch));
@@ -254,17 +290,32 @@ function vMatchs(){
   else if(f==='next')ev=ev.filter(e=>e.st==='pre');
   else if(f==='past')ev=ev.filter(e=>e.st==='fin').reverse();
   else if(f==='fav')ev=ev.filter(e=>S.favs.includes(e.home)||S.favs.includes(e.away));
-  else if(f==='all'&&!S.team&&!S.round)ev=ev.filter(e=>e.ts>now-3*864e5&&e.ts<now+21*864e5);
+  else if(f==='all'&&!glob&&!S.round)ev=ev.filter(e=>e.ts>now-3*864e5&&e.ts<now+21*864e5);
   const chips=[['all','Récents'],['live','En direct'],['next','À venir'],['past','Résultats'],['fav','★ Favoris']].map(([c,l])=>`<div class="chip ${f===c?'on':''}" data-f="${c}">${l}</div>`).join('');
-  let h=`<div class="chips">${chips}</div><div class="bar"><input id="q" placeholder="Rechercher un club…" value="${esc(S.team)}">
-  <select id="rd"><option value="">Toute la saison</option>${rk.map(r=>`<option value="${esc(r[0])}" ${S.round===r[0]?'selected':''}>${esc(r[1]||r[0])}</option>`).join('')}</select></div>
+  const td=ymd(0);
+  let h=`<div class="chips">${chips}</div><div class="bar"><input id="q" type="search" placeholder="🔎 Rechercher une équipe…" value="${esc(S.team)}">
+  ${glob?'':`<select id="rd"><option value="">Toute la saison</option>${rk.map(r=>`<option value="${esc(r[0])}" ${S.round===r[0]?'selected':''}>${esc(r[1]||r[0])}</option>`).join('')}</select>`}</div>
+  <div class="bar"><input id="dt" type="date" value="${esc(S.date)}" aria-label="Date">
+  <button class="mini ${S.date===td?'on':''}" id="dToday">Aujourd'hui</button><button class="mini ${S.date===ymd(1)?'on':''}" id="dTom">Demain</button>${glob?'<button class="mini" id="dx" aria-label="Effacer la recherche">✕</button>':''}</div>
+  ${glob?`<div class="day">🔎 Tous les championnats${S.team?' · « '+esc(S.team)+' »':''}${S.date?' · '+esc(fmtDay(Date.parse(S.date+'T12:00:00Z'))):''}${S.allBusy?' · chargement…':''}</div>`:''}
   ${chs.length>1?`<div class="bar"><select id="chf"><option value="">📺 Toutes les chaînes</option>${chs.map(c=>`<option value="${esc(c)}" ${S.ch===c?'selected':''}>📺 ${esc(c)}</option>`).join('')}</select></div>`:''}`;
   if(!ev.length){
-    const msg=all.length?'Aucun match pour ce filtre.':S.err[k]?`Impossible de charger les données (${esc(S.err[k])}).<br><br><button class="btn" id="rt">Réessayer</button>`:S.busy[k]?'Chargement…':'Aucun match trouvé.';
+    const msg=glob&&S.allBusy?'Recherche dans tous les championnats…':all.length?'Aucun match pour ce filtre.':S.err[k]?`Impossible de charger les données (${esc(S.err[k])}).<br><br><button class="btn" id="rt">Réessayer</button>`:S.busy[k]?'Chargement…':'Aucun match trouvé.';
     return h+`<div class="empty">${msg}</div>`}
   let last='';
   ev.forEach(e=>{const d=dayKey(e.ts);if(d!==last){h+=`<div class="day">${esc(fmtDay(e.ts))}</div>`;last=d}h+=card(e)});
   return h}
+/* recherche globale : charge tous les championnats + le jour choisi pour la Botola */
+async function loadAll(){
+  if(S.allBusy)return;S.allBusy=true;render();
+  for(const k in LEAGUES)if(!S.upd[k]||Date.now()-S.upd[k]>6e5||!S.ev[k].length)await load(false,k);
+  S.allBusy=false;render()}
+async function loadDay(d){
+  for(const k in LEAGUES){if(LEAGUES[k].src!=='tsdb')continue;
+    const days=store.get('days_'+k,{});if(d in days)continue;
+    try{const r=await jget(`${TSDB}eventsday.php?d=${d}&l=${LEAGUES[k].id}`,2);days[d]=r.events||[];store.set('days_'+k,days);
+      S.ev[k]=mergeDays(days);store.set('ev_'+k,S.ev[k]);render()}catch(e){}}}
+function setDate(d){S.date=d;S.filter='all';render();if(d){loadAll();loadDay(d)}}
 
 function vClassement(){
   const k=S.lg,L=LEAGUES[k];let gs=S.tb[k],calc=false;
@@ -272,22 +323,24 @@ function vClassement(){
   if(!gs[0].rows.length)return'<div class="empty">Classement indisponible pour l\'instant.</div>';
   const tbl=g=>{const n=g.rows.length;return`${g.name?`<h2>${esc(g.name)}</h2>`:''}<table><tr><th>#</th><th style="text-align:left">Club</th><th>J</th><th>G</th><th>N</th><th>P</th><th>+/-</th><th>Pts</th></tr>
   ${g.rows.map((r,i)=>`<tr class="${i<L.zones.a?'z1':i<L.zones.a+L.zones.b?'z2':L.zones.r&&i>=n-L.zones.r?'zr':''}"><td>${i+1}</td>
-  <td class="n">${badge(r.b)}${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table>`};
+  <td class="n">${badge(r.b,r.n)}${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table>`};
   const leg=L.leg.map(([c,t])=>`<span style="color:${c}">■ ${t}</span>`).join('');
-  return gs.map(tbl).join('')+`<div class="leg">${leg}</div><div class="leg">${calc?'Classement calculé à partir des résultats disponibles':'Classement officiel'}</div>`}
+  return gs.map(tbl).join('')+`<div class="leg">${leg}</div><div class="leg">${calc?'Classement calculé à partir des résultats disponibles':L.src==='tsdb'&&gs[0].rows.length<8?'Top '+gs[0].rows.length+' uniquement (limite de la source gratuite)':'Classement officiel'}</div>`}
 
 function vReglages(){
   return`<div class="panel"><h3>Chaînes TV</h3>
   <label>Une ligne = « Championnat ou club = Chaîne1, Chaîne2 ». Modifiable à tout moment. Les chaînes par défaut (beIN Sports, Arryadia…) s'ajoutent automatiquement. Exemple : « Wydad Casablanca = Arryadia ».</label>
   <textarea id="tv" rows="5">${esc(S.tvmap)}</textarea><button class="btn" id="st">Enregistrer</button></div>
   <div class="panel"><h3>Favoris</h3><div style="color:var(--mut);font-size:13px">${S.favs.length?S.favs.map(esc).join(', ')+' <a id="cf" style="color:var(--acc);cursor:pointer">· vider</a>':'Ouvrez un match et appuyez sur ★ pour suivre un club.'}</div></div>
-  <div class="panel"><h3>Données</h3><div style="color:var(--mut);font-size:13px">Heures affichées : Maroc. Actualisation automatique (1 min en direct, 5 min sinon). Sources gratuites : ESPN (CAF, Ligue des champions, Angleterre, France, Italie, Allemagne) et TheSportsDB (Botola). Chaînes par défaut basées sur les droits de diffusion annoncés pour la région MENA : à vérifier selon ton abonnement.</div><button class="btn" id="rf">Actualiser maintenant</button></div>`}
+  <div class="panel"><h3>Données</h3><div style="color:var(--mut);font-size:13px">Heures affichées : Maroc. Actualisation automatique (1 min en direct, 5 min sinon). Sources gratuites : ESPN (CAF, Ligue des champions, Angleterre, France, Italie, Allemagne) et TheSportsDB (Botola). Chaînes par défaut basées sur les droits de diffusion annoncés pour la région MENA : à vérifier selon ton abonnement.<br>L'application se met à jour toute seule quand une nouvelle version est publiée. Version : ${VERSION}</div><button class="btn" id="rf">Actualiser maintenant</button></div>`}
 
 function render(){
   const L=LEAGUES[S.lg];
   $('#ttl').textContent=L.flag+' '+L.name;
   $('#lg').innerHTML=Object.entries(LEAGUES).map(([k,l])=>`<div data-lg="${k}" class="${k===S.lg?'on':''}">${l.flag} ${esc(l.short)}</div>`).join('');
+  const a=document.activeElement,keep=a&&a.id==='q'?a.selectionStart:null;
   $('#main').innerHTML=S.view==='matchs'?vMatchs():S.view==='classement'?vClassement():vReglages();
+  if(keep!==null){const n=$('#q');if(n){n.focus();n.setSelectionRange(keep,keep)}}
   const u=S.upd[S.lg],e=S.err[S.lg];
   $('#dot').className=e?'err':'ok';
   $('#upd').textContent=S.busy[S.lg]&&!u?'Chargement…':u?'Mis à jour à '+fmtHour(u)+(e?' · hors ligne':''):(e?'Hors ligne':'Chargement…');
@@ -297,8 +350,12 @@ function bind(){
   document.querySelectorAll('.m').forEach(c=>c.onclick=ev=>{if(!ev.target.closest('[data-fav]'))c.classList.toggle('open')});
   document.querySelectorAll('[data-fav]').forEach(a=>a.onclick=()=>{const t=a.dataset.fav;S.favs=S.favs.includes(t)?S.favs.filter(x=>x!==t):[...S.favs,t];store.set('favs',S.favs);render()});
   document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{S.filter=c.dataset.f;render()});
-  document.querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{S.lg=c.dataset.lg;S.round='';S.team='';S.ch='';S.filter='all';store.set('lg',S.lg);render();load(false)});
-  const q=$('#q');if(q)q.oninput=()=>{S.team=q.value;const p=q.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)};
+  document.querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{S.lg=c.dataset.lg;S.round='';S.team='';S.ch='';S.date='';S.filter='all';store.set('lg',S.lg);render();load(false)});
+  const q=$('#q');if(q)q.oninput=()=>{S.team=q.value;render();if(S.team.trim().length>=2)loadAll()};
+  const dt=$('#dt');if(dt)dt.onchange=()=>setDate(dt.value);
+  const dT=$('#dToday');if(dT)dT.onclick=()=>setDate(S.date===ymd(0)?'':ymd(0));
+  const dM=$('#dTom');if(dM)dM.onclick=()=>setDate(S.date===ymd(1)?'':ymd(1));
+  const dx=$('#dx');if(dx)dx.onclick=()=>{S.team='';S.date='';render()};
   const rd=$('#rd');if(rd)rd.onchange=()=>{S.round=rd.value;render()};
   const chf=$('#chf');if(chf)chf.onchange=()=>{S.ch=chf.value;render()};
   const st=$('#st');if(st)st.onclick=()=>{S.tvmap=$('#tv').value;store.set('tvmap',S.tvmap);render()};
@@ -313,7 +370,27 @@ addEventListener('touchstart',e=>{y0=scrollY===0?e.touches[0].clientY:null},{pas
 addEventListener('touchmove',e=>{if(y0!==null&&e.touches[0].clientY-y0>80)p.classList.add('on')},{passive:true});
 addEventListener('touchend',async()=>{if(p.classList.contains('on')){await load(true);setTimeout(()=>p.classList.remove('on'),400)}y0=null});})();
 function schedule(){setTimeout(async()=>{if(!document.hidden)await load(false);schedule()},S.ev[S.lg].some(e=>e.st==='live')?60e3:300e3)}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-(S.upd[S.lg]||0)>60e3)load(false)});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(Date.now()-(S.upd[S.lg]||0)>60e3)load(false);checkUpdate()}});
+
+/* ============ MISE À JOUR AUTOMATIQUE DE L'APP ============ */
+// Vérifie toutes les 5 min (et au retour sur l'app) si une nouvelle version est en ligne, puis recharge.
+let baseSig=null;
+async function checkUpdate(){
+  try{
+    const t=await fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'');
+    if(!t)return;
+    const m=t.match(/const VERSION='([^']+)'/),sig=m?m[1]:t.length+':'+t.slice(-200);
+    if(m?m[1]!==VERSION:(baseSig&&sig!==baseSig)){
+      const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return; // pas pendant la saisie
+      let last=0;try{last=+sessionStorage.getItem('fl_reload')||0}catch(e){}
+      if(Date.now()-last<120e3)return; // anti-boucle si le serveur sert encore l'ancienne version
+      try{sessionStorage.setItem('fl_reload',Date.now())}catch(e){}
+      await fetch(location.pathname,{cache:'reload'}).catch(()=>{});
+      location.reload();return}
+    baseSig=sig}catch(e){}}
+setInterval(()=>{if(!document.hidden)checkUpdate()},300e3);
+setTimeout(checkUpdate,5e3);
+
 render();load(false).then(schedule);
 </script>
 </body>
