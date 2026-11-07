@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7a1519">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Foot Live">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23c1272d'/%3E%3Ctext x='50' y='68' font-size='56' text-anchor='middle'%3E%E2%9A%BD%3C/text%3E%3C/svg%3E">
+<title>Foot Live</title>
+<style>
+:root{--bg:#0b1410;--card:#13201a;--line:#1f3128;--txt:#eaf3ee;--mut:#8aa396;--acc:#c1272d;--grn:#1f9d55;--live:#ff3b30}
+*{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--txt);font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:calc(64px + env(safe-area-inset-bottom));overscroll-behavior-y:contain}
+header{position:sticky;top:0;z-index:6;background:linear-gradient(135deg,#7a1519,#c1272d);padding:calc(10px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right)) 10px calc(14px + env(safe-area-inset-left))}
+.top{display:flex;align-items:center;gap:10px}
+.top h1{font-size:18px;flex:1}
+.top small{opacity:.85;font-size:11px;display:block;font-weight:400}
+#dot{width:9px;height:9px;border-radius:50%;background:#777}
+#dot.ok{background:#5cff9a}#dot.err{background:#ffd34d}
+.lg{display:flex;gap:8px;margin-top:8px;overflow-x:auto;scrollbar-width:none}
+.lg::-webkit-scrollbar{display:none}
+.lg div{white-space:nowrap;min-height:36px;display:flex;align-items:center;padding:0 14px;border-radius:99px;background:rgba(0,0,0,.25);color:#fff;font-size:14px;cursor:pointer}
+.lg div.on{background:#fff;color:#7a1519;font-weight:600}
+nav{position:fixed;bottom:0;left:0;right:0;padding-bottom:env(safe-area-inset-bottom);display:flex;background:#0e1a14;border-top:1px solid var(--line);z-index:5}
+nav button{flex:1;min-height:52px;padding:8px 4px;background:none;border:0;color:var(--mut);font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+nav button span{font-size:20px;line-height:1}
+nav button.on{color:#fff;border-top:2px solid var(--acc);margin-top:-1px}
+main{max-width:760px;margin:0 auto;padding:12px calc(12px + env(safe-area-inset-right)) 12px calc(12px + env(safe-area-inset-left))}
+.bar{display:flex;gap:8px;margin-bottom:10px}
+.bar input,.bar select{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);color:var(--txt);min-height:44px;padding:9px;border-radius:10px;font-size:16px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -12px 10px;padding:0 12px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;min-height:38px;display:flex;align-items:center;padding:0 14px;border-radius:99px;background:var(--card);border:1px solid var(--line);color:var(--mut);font-size:13px;cursor:pointer}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.day{margin:14px 0 6px;color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.m{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.m:active{background:#182a21}
+.row{display:flex;align-items:center;gap:8px}
+.t{flex:1;display:flex;align-items:center;gap:6px;min-width:0;flex-direction:column;text-align:center;font-size:13px}
+.t span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.2;word-break:break-word}
+.t img{width:34px;height:34px;object-fit:contain}
+.ph{width:34px;height:34px;border-radius:50%;background:#2a4136;display:inline-block;flex:none}
+.sc{min-width:64px;text-align:center;font-weight:700;font-size:17px}
+.sc small{display:block;font-weight:400;font-size:11px;color:var(--mut)}
+.live{color:var(--live)}
+.live::before{content:"● ";animation:b 1s infinite}
+@keyframes b{50%{opacity:.2}}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--mut)}
+.tv{background:#0e2a1b;color:#7ee2a8;border-radius:6px;padding:1px 7px}
+.det{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:13px;color:var(--mut)}
+.m.open .det{display:block}
+.det a{display:inline-block;padding:8px 0;color:#ffd34d}
+h2{font-size:13px;color:var(--mut);margin:14px 0 6px;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 3px;text-align:center;border-bottom:1px solid var(--line)}
+th{color:var(--mut);font-weight:500;font-size:11px}
+td.n{text-align:left;display:flex;gap:6px;align-items:center}
+td.n img{width:20px;height:20px;object-fit:contain}
+td.n .ph{width:20px;height:20px}
+td b{color:#fff}
+.z1 td:first-child{box-shadow:inset 3px 0 var(--grn)}
+.z2 td:first-child{box-shadow:inset 3px 0 #3b82f6}
+.zr td:first-child{box-shadow:inset 3px 0 var(--live)}
+.leg{font-size:11px;color:var(--mut);margin-top:10px;display:flex;gap:12px;flex-wrap:wrap}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.panel h3{font-size:14px;margin-bottom:8px}
+.panel label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
+.panel textarea{width:100%;background:#0b1410;border:1px solid var(--line);color:var(--txt);padding:10px;border-radius:10px;font-size:16px}
+.btn{background:var(--acc);color:#fff;border:0;min-height:44px;padding:0 18px;border-radius:10px;margin-top:10px;cursor:pointer;font-size:15px}
+.empty{text-align:center;color:var(--mut);padding:40px 10px}
+.fav{color:#ffd34d}
+#ptr{position:fixed;top:0;left:0;right:0;text-align:center;background:var(--acc);color:#fff;font-size:12px;padding:4px;transform:translateY(-100%);transition:transform .2s;z-index:9}
+#ptr.on{transform:none}
+@media(max-width:400px){.sc{min-width:58px;font-size:16px}th,td{padding:8px 2px}table{font-size:12px}}
+@media(min-width:700px){nav{max-width:760px;left:50%;transform:translateX(-50%);border-radius:14px 14px 0 0}}
+</style>
+</head>
+<body>
+<div id="ptr">Actualisation…</div>
+<header>
+  <div class="top"><div style="flex:1"><h1 id="ttl">Foot Live</h1><small id="upd">Chargement…</small></div><div id="dot"></div></div>
+  <div class="lg" id="lg"></div>
+</header>
+<main id="main"></main>
+<nav>
+<button data-v="matchs" class="on"><span>⚽</span>Matchs</button>
+<button data-v="classement"><span>🏆</span>Classement</button>
+<button data-v="reglages"><span>⚙️</span>Réglages</button>
+</nav>
+
+<script>
+/* ============ CONFIG (ajouter un championnat = ajouter une ligne) ============ */
+const TZ='Africa/Casablanca';
+const TSDB='https://www.thesportsdb.com/api/v1/json/123/';
+const ESPN='https://site.api.espn.com/apis/site/v2/sports/soccer/';
+const ESPN_ST='https://site.api.espn.com/apis/v2/sports/soccer/';
+const LEAGUES={
+  botola:{flag:'🇲🇦',short:'Botola Pro',name:'Botola Pro Inwi',src:'tsdb',id:4520,tvKey:'botola pro',zones:{a:2,b:2,r:2}},
+  caf:{flag:'🌍',short:'CAF Champions League',name:'CAF Champions League',src:'espn',slug:'caf.champions',tvKey:'caf champions league',zones:{a:2,b:0,r:0}}
+};
+const STAGES={'first-preliminary-round':'Tour préliminaire 1','second-preliminary-round':'Tour préliminaire 2','group-stage':'Phase de groupes','quarterfinals':'Quarts de finale','semifinals':'Demi-finales','finals':'Finale','round-of-16':'8es de finale'};
+
+const $=s=>document.querySelector(s);
+const store={get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const S={view:'matchs',lg:store.get('lg','botola'),filter:'all',team:'',round:'',
+  ev:{},tb:{},upd:{},err:{},busy:{},
+  tvmap:store.get('tvmap','Botola Pro = Arryadia'),favs:store.get('favs',[])};
+if(!LEAGUES[S.lg])S.lg='botola';
+for(const k in LEAGUES){S.ev[k]=store.get('ev_'+k,[]);S.tb[k]=store.get('tb_'+k,null);S.upd[k]=store.get('up_'+k,null)}
+
+/* ============ HELPERS ============ */
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const ymd=o=>new Intl.DateTimeFormat('en-CA',{timeZone:TZ}).format(Date.now()+o*864e5);
+const fmtDay=t=>new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',timeZone:TZ}).format(t);
+const fmtHour=t=>new Intl.DateTimeFormat('fr-FR',{hour:'2-digit',minute:'2-digit',timeZone:TZ}).format(t);
+const dayKey=t=>new Intl.DateTimeFormat('en-CA',{timeZone:TZ}).format(t);
+function season(){const d=new Date(),y=d.getFullYear();return d.getMonth()>=6?`${y}-${y+1}`:`${y-1}-${y}`}
+async function jget(url,tries=3){
+  let last;
+  for(let i=0;i<tries;i++){
+    try{const r=await fetch(url,{cache:'no-store'});
+      if(r.status===429){last=new Error('HTTP 429 (trop de requêtes)');await sleep(2500*(i+1));continue}
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const t=await r.text();return t?JSON.parse(t):{}}
+    catch(e){last=e;await sleep(700)}}
+  throw last}
+
+/* ============ NORMALISATION ============ */
+// forme commune : {id,home,away,hb,ab,ts,st:'pre|live|fin|post',hs,as,rk,rl,venue,city,tv[],notes,prog}
+const lg=t=>t?(t.logo||(t.id?`https://a.espncdn.com/i/teamlogos/soccer/500/${t.id}.png`:'')):'';
+function fromEspn(e){
+  const c=(e.competitions||[])[0]||{},H=(c.competitors||[]).find(x=>x.homeAway==='home')||{},A=(c.competitors||[]).find(x=>x.homeAway==='away')||{};
+  const t=(e.status||{}).type||{},nm=t.name||'';
+  let st=t.state==='in'?'live':t.state==='post'?'fin':'pre';
+  if(/POSTPONED|CANCEL|SUSPEND|ABANDON/i.test(nm))st='post';
+  const tv=new Set();
+  (c.broadcasts||[]).forEach(b=>(b.names||[b.name||b.shortName]).forEach(n=>n&&tv.add(n)));
+  (c.geoBroadcasts||[]).forEach(b=>b.media&&(b.media.shortName||b.media.name)&&tv.add(b.media.shortName||b.media.name));
+  if(typeof c.broadcast==='string'&&c.broadcast)tv.add(c.broadcast);
+  const slug=(e.season||{}).slug||'';
+  const v=c.venue||{};
+  const hasScore=st==='live'||st==='fin';
+  return{id:'e'+e.id,home:(H.team||{}).displayName||'?',away:(A.team||{}).displayName||'?',hb:lg(H.team),ab:lg(A.team),
+    ts:Date.parse(e.date),st,hs:hasScore?+H.score:null,as:hasScore?+A.score:null,rk:slug,rl:STAGES[slug]||slug.replace(/-/g,' '),
+    venue:v.fullName||'',city:(v.address||{}).city&&(v.address||{}).city!==v.fullName?v.address.city:'',tv:[...tv],
+    notes:(c.notes||[]).map(n=>n.text||n.headline).filter(Boolean).join(' · '),
+    prog:st==='live'?(((e.status||{}).displayClock)||t.shortDetail||'EN DIRECT'):(/PEN/i.test(nm)?'Terminé (t.a.b.)':/EXTRA|AET/i.test(nm)?'Terminé (prol.)':st==='post'?(t.description||'Reporté'):'')}}
+function fromTsdb(e){
+  const stt=(e.strStatus||'').trim();
+  let ts=0;if(e.strTimestamp){const z=/Z$|[+-]\d\d:?\d\d$/.test(e.strTimestamp)?e.strTimestamp:e.strTimestamp+'Z';ts=Date.parse(z)}
+  if(!ts&&e.dateEvent)ts=Date.parse(e.dateEvent+'T'+(e.strTime||'00:00:00')+'Z');
+  let st='pre';
+  if(/^(1H|2H|HT|ET|P|LIVE|BT)$|Live|In Play|Half/i.test(stt))st='live';
+  else if(/Postp|PST|Cancel|Abandon|Susp/i.test(stt))st='post';
+  else if(/FT|Finish|AET|PEN|Final/i.test(stt)||(e.intHomeScore!==null&&e.intHomeScore!==''&&e.intHomeScore!==undefined&&!/NS|Not Started/i.test(stt)))st='fin';
+  const tv=[];if(e.strTVStation)String(e.strTVStation).split(/[,;/]/).forEach(x=>x.trim()&&tv.push(x.trim()));
+  return{id:'t'+e.idEvent,home:e.strHomeTeam,away:e.strAwayTeam,hb:e.strHomeTeamBadge||'',ab:e.strAwayTeamBadge||'',ts,st,
+    hs:(st==='live'||st==='fin')?+e.intHomeScore:null,as:(st==='live'||st==='fin')?+e.intAwayScore:null,rk:String(e.intRound||''),rl:e.intRound?'J'+e.intRound:'',
+    venue:e.strVenue||'',city:e.strCity||'',tv,notes:'',prog:st==='live'?(e.strProgress||stt||'EN DIRECT'):st==='post'?'Reporté':''}}
+
+/* ============ CHARGEMENT ============ */
+async function loadEspn(k){
+  const L=LEAGUES[k],y=new Date().getFullYear(),map=new Map();
+  let ok=0,last=null,t0=0,t1=Infinity;
+  for(const yy of [y,y+1]){
+    try{const d=await jget(`${ESPN}${L.slug}/scoreboard?dates=${yy}&limit=1000`,2);ok++;const se=((d.leagues||[])[0]||{}).season;if(se&&yy===y){t0=Date.parse(se.startDate)||0;t1=Date.parse(se.endDate)||Infinity}(d.events||[]).forEach(e=>map.set(e.id,fromEspn(e)))}
+    catch(e){last=e}}
+  if(!ok)throw last||new Error('réseau');
+  S.ev[k]=[...map.values()].filter(e=>e.ts>=t0&&e.ts<=t1).sort((a,b)=>a.ts-b.ts);
+  try{
+    const d=await jget(`${ESPN_ST}${L.slug}/standings`,1);
+    const num=(x,n)=>{const s=(x.stats||[]).find(z=>z.name===n);return s?(s.value??parseFloat(s.displayValue))||0:0};
+    S.tb[k]=(d.children||[]).map(g=>({name:(g.name||'').split(' - ').pop().replace('Group','Groupe'),rows:((g.standings||{}).entries||[]).map(x=>({
+      n:x.team.displayName,b:((x.team.logos||[])[0]||{}).href||'',p:num(x,'gamesPlayed'),w:num(x,'wins'),d:num(x,'ties'),l:num(x,'losses'),
+      gf:num(x,'pointsFor'),ga:num(x,'pointsAgainst'),pts:num(x,'points')})).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga))})).filter(g=>g.rows.length)
+  }catch(e){}}
+function mergeDays(days){const m=new Map();Object.values(days).flat().forEach(e=>m.set(e.idEvent,fromTsdb(e)));return[...m.values()].sort((a,b)=>a.ts-b.ts)}
+async function loadTsdb(k,full){
+  const L=LEAGUES[k],days=store.get('days_'+k,{}),win=[];
+  for(let o=-7;o<=14;o++)win.push(ymd(o));
+  const list=(!full&&Object.keys(days).length)?win.filter(d=>d>=ymd(-1)&&d<=ymd(1)):win.filter(d=>full||!days[d]||d>=ymd(-1));
+  let fails=0,last=null;
+  for(let i=0;i<list.length;i+=4){
+    await Promise.all(list.slice(i,i+4).map(async d=>{
+      try{const r=await jget(`${TSDB}eventsday.php?d=${d}&l=${L.id}`,3);days[d]=r.events||[]}
+      catch(e){fails++;last=e}}));
+    S.ev[k]=mergeDays(days);if(S.lg===k)render()}
+  try{const nx=await jget(`${TSDB}eventsnextleague.php?id=${L.id}`,1);(nx.events||[]).forEach(e=>{const d=e.dateEvent;if(d&&!(days[d]||[]).some(x=>x.idEvent===e.idEvent))(days[d]=days[d]||[]).push(e)})}catch(e){}
+  const keep={};Object.keys(days).sort().slice(-60).forEach(d=>keep[d]=days[d]);
+  store.set('days_'+k,keep);S.ev[k]=mergeDays(keep);
+  if(!S.tb[k]||full||Date.now()-(S.upd[k]||0)>6e5){
+    try{const d=await jget(`${TSDB}lookuptable.php?l=${L.id}&s=${season()}`,1);
+      if(d&&d.table&&d.table.length)S.tb[k]=[{name:'',rows:d.table.map(r=>({n:r.strTeam,b:r.strBadge||r.strTeamBadge||'',p:+r.intPlayed,w:+r.intWin,d:+r.intDraw,l:+r.intLoss,gf:+r.intGoalsFor,ga:+r.intGoalsAgainst,pts:+r.intPoints}))}]}catch(e){}}
+  if(fails&&!S.ev[k].length)throw last||new Error('réseau')}
+async function load(full,kk){
+  const k=kk||S.lg;if(S.busy[k])return;S.busy[k]=true;S.err[k]=null;render();
+  try{await(LEAGUES[k].src==='espn'?loadEspn(k):loadTsdb(k,full));S.upd[k]=Date.now()}
+  catch(e){S.err[k]=e.message||'réseau'}
+  store.set('ev_'+k,S.ev[k]);store.set('tb_'+k,S.tb[k]);store.set('up_'+k,S.upd[k]);
+  S.busy[k]=false;render()}
+function computeTable(k){
+  const t={};
+  S.ev[k].filter(e=>e.st==='fin'&&e.hs!=null&&!isNaN(e.hs)).forEach(e=>{
+    const row=(n,b)=>t[n]=t[n]||{n,b,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};
+    const H=row(e.home,e.hb),A=row(e.away,e.ab);
+    H.p++;A.p++;H.gf+=e.hs;H.ga+=e.as;A.gf+=e.as;A.ga+=e.hs;
+    if(e.hs>e.as){H.w++;A.l++;H.pts+=3}else if(e.hs<e.as){A.w++;H.l++;A.pts+=3}else{H.d++;A.d++;H.pts++;A.pts++}});
+  return[{name:'',rows:Object.values(t).sort((x,y)=>y.pts-x.pts||(y.gf-y.ga)-(x.gf-x.ga)||y.gf-x.gf)}]}
+
+/* ============ AFFICHAGE ============ */
+function channels(e){
+  const out=new Set(e.tv),L=LEAGUES[S.lg];
+  S.tvmap.split('\n').forEach(l=>{const[k,v]=l.split('=').map(x=>x&&x.trim());
+    if(k&&v&&[L.tvKey,e.home.toLowerCase(),e.away.toLowerCase()].includes(k.toLowerCase()))v.split(/[,;/]/).forEach(x=>x.trim()&&out.add(x.trim()))});
+  return[...out]}
+const badge=u=>u?`<img src="${esc(u)}" loading="lazy" onerror="this.outerHTML='<i class=ph></i>'">`:'<i class="ph"></i>';
+function card(e){
+  const live=e.st==='live',fin=e.st==='fin',ch=channels(e);
+  const sc=(live||fin)&&e.hs!=null&&!isNaN(e.hs)?`${e.hs} - ${e.as}`:fmtHour(e.ts);
+  const sub=live?`<span class="live">${esc(e.prog)}</span>`:esc(e.prog||(fin?'Terminé':''));
+  const fh=S.favs.includes(e.home)||S.favs.includes(e.away);
+  return`<div class="m"><div class="row"><div class="t">${badge(e.hb)}<span>${esc(e.home)}</span></div>
+  <div class="sc">${sc}<small>${sub}</small></div>
+  <div class="t r">${badge(e.ab)}<span>${esc(e.away)}</span></div></div>
+  <div class="meta">${fh?'<span class="fav">★</span>':''}${e.rl?`<span>${esc(e.rl)}</span>`:''}${ch.map(c=>`<span class="tv">📺 ${esc(c)}</span>`).join('')}${e.venue?`<span>🏟 ${esc(e.venue)}</span>`:''}</div>
+  <div class="det">📅 ${esc(fmtDay(e.ts))} à ${fmtHour(e.ts)} (heure du Maroc)<br>
+  ${e.venue?'🏟 '+esc(e.venue)+(e.city?', '+esc(e.city):'')+'<br>':''}
+  ${e.notes?'ℹ️ '+esc(e.notes)+'<br>':''}
+  ${ch.length?'📺 Diffusion : '+esc(ch.join(', ')):'📺 Chaîne non communiquée (à ajouter dans Réglages)'}<br>
+  <a data-fav="${esc(e.home)}">★ Suivre ${esc(e.home)}</a> · <a data-fav="${esc(e.away)}">★ Suivre ${esc(e.away)}</a></div></div>`}
+
+function vMatchs(){
+  const k=S.lg,all=S.ev[k],now=Date.now();let ev=all;
+  const rk=[];all.forEach(e=>{if(e.rk&&!rk.find(r=>r[0]===e.rk))rk.push([e.rk,e.rl])});
+  if(S.team)ev=ev.filter(e=>(e.home+' '+e.away).toLowerCase().includes(S.team.toLowerCase()));
+  if(S.round)ev=ev.filter(e=>e.rk===S.round);
+  const f=S.filter;
+  if(f==='live')ev=ev.filter(e=>e.st==='live');
+  else if(f==='next')ev=ev.filter(e=>e.st==='pre');
+  else if(f==='past')ev=ev.filter(e=>e.st==='fin').reverse();
+  else if(f==='fav')ev=ev.filter(e=>S.favs.includes(e.home)||S.favs.includes(e.away));
+  else if(f==='all'&&!S.team&&!S.round)ev=ev.filter(e=>e.ts>now-3*864e5&&e.ts<now+21*864e5);
+  const chips=[['all','Récents'],['live','En direct'],['next','À venir'],['past','Résultats'],['fav','★ Favoris']].map(([c,l])=>`<div class="chip ${f===c?'on':''}" data-f="${c}">${l}</div>`).join('');
+  let h=`<div class="chips">${chips}</div><div class="bar"><input id="q" placeholder="Rechercher un club…" value="${esc(S.team)}">
+  <select id="rd"><option value="">Toutes phases</option>${rk.map(r=>`<option value="${esc(r[0])}" ${S.round===r[0]?'selected':''}>${esc(r[1]||r[0])}</option>`).join('')}</select></div>`;
+  if(!ev.length){
+    const msg=all.length?'Aucun match pour ce filtre.':S.err[k]?`Impossible de charger les données (${esc(S.err[k])}).<br><br><button class="btn" id="rt">Réessayer</button>`:S.busy[k]?'Chargement…':'Aucun match trouvé.';
+    return h+`<div class="empty">${msg}</div>`}
+  let last='';
+  ev.forEach(e=>{const d=dayKey(e.ts);if(d!==last){h+=`<div class="day">${esc(fmtDay(e.ts))}</div>`;last=d}h+=card(e)});
+  return h}
+
+function vClassement(){
+  const k=S.lg,L=LEAGUES[k];let gs=S.tb[k],calc=false;
+  if(!gs||!gs.length||!gs[0].rows.length){gs=computeTable(k);calc=true}
+  if(!gs[0].rows.length)return'<div class="empty">Classement indisponible pour l\'instant.</div>';
+  const tbl=g=>{const n=g.rows.length;return`${g.name?`<h2>${esc(g.name)}</h2>`:''}<table><tr><th>#</th><th style="text-align:left">Club</th><th>J</th><th>G</th><th>N</th><th>P</th><th>+/-</th><th>Pts</th></tr>
+  ${g.rows.map((r,i)=>`<tr class="${i<L.zones.a?'z1':i<L.zones.a+L.zones.b?'z2':L.zones.r&&i>=n-L.zones.r?'zr':''}"><td>${i+1}</td>
+  <td class="n">${badge(r.b)}${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table>`};
+  const leg=k==='botola'?'<span style="color:var(--grn)">■ Ligue des champions CAF</span><span style="color:#3b82f6">■ Coupe de la Confédération</span><span style="color:var(--live)">■ Relégation</span>':'<span style="color:var(--grn)">■ Qualifiés (2 premiers de chaque groupe)</span>';
+  return gs.map(tbl).join('')+`<div class="leg">${leg}</div><div class="leg">${calc?'Classement calculé à partir des résultats disponibles':'Classement officiel'}</div>`}
+
+function vReglages(){
+  return`<div class="panel"><h3>Chaînes TV</h3>
+  <label>Une ligne = « Championnat ou club = Chaîne1, Chaîne2 ». Modifiable à tout moment. Les chaînes fournies par les sources s'ajoutent automatiquement.</label>
+  <textarea id="tv" rows="5">${esc(S.tvmap)}</textarea><button class="btn" id="st">Enregistrer</button></div>
+  <div class="panel"><h3>Favoris</h3><div style="color:var(--mut);font-size:13px">${S.favs.length?S.favs.map(esc).join(', ')+' <a id="cf" style="color:var(--acc);cursor:pointer">· vider</a>':'Ouvrez un match et appuyez sur ★ pour suivre un club.'}</div></div>
+  <div class="panel"><h3>Données</h3><div style="color:var(--mut);font-size:13px">Heures affichées : Maroc. Actualisation automatique (1 min en direct, 5 min sinon). Sources gratuites : ESPN (CAF) et TheSportsDB (Botola).</div><button class="btn" id="rf">Actualiser maintenant</button></div>`}
+
+function render(){
+  const L=LEAGUES[S.lg];
+  $('#ttl').textContent=L.flag+' '+L.name;
+  $('#lg').innerHTML=Object.entries(LEAGUES).map(([k,l])=>`<div data-lg="${k}" class="${k===S.lg?'on':''}">${l.flag} ${esc(l.short)}</div>`).join('');
+  $('#main').innerHTML=S.view==='matchs'?vMatchs():S.view==='classement'?vClassement():vReglages();
+  const u=S.upd[S.lg],e=S.err[S.lg];
+  $('#dot').className=e?'err':'ok';
+  $('#upd').textContent=S.busy[S.lg]&&!u?'Chargement…':u?'Mis à jour à '+fmtHour(u)+(e?' · hors ligne':''):(e?'Hors ligne':'Chargement…');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view));
+  bind()}
+function bind(){
+  document.querySelectorAll('.m').forEach(c=>c.onclick=ev=>{if(!ev.target.closest('[data-fav]'))c.classList.toggle('open')});
+  document.querySelectorAll('[data-fav]').forEach(a=>a.onclick=()=>{const t=a.dataset.fav;S.favs=S.favs.includes(t)?S.favs.filter(x=>x!==t):[...S.favs,t];store.set('favs',S.favs);render()});
+  document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{S.filter=c.dataset.f;render()});
+  document.querySelectorAll('[data-lg]').forEach(c=>c.onclick=()=>{S.lg=c.dataset.lg;S.round='';S.team='';S.filter='all';store.set('lg',S.lg);render();load(false)});
+  const q=$('#q');if(q)q.oninput=()=>{S.team=q.value;const p=q.selectionStart;render();const n=$('#q');n.focus();n.setSelectionRange(p,p)};
+  const rd=$('#rd');if(rd)rd.onchange=()=>{S.round=rd.value;render()};
+  const st=$('#st');if(st)st.onclick=()=>{S.tvmap=$('#tv').value;store.set('tvmap',S.tvmap);render()};
+  const cf=$('#cf');if(cf)cf.onclick=()=>{S.favs=[];store.set('favs',[]);render()};
+  const rt=$('#rt');if(rt)rt.onclick=()=>load(true);
+  const rf=$('#rf');if(rf)rf.onclick=()=>load(true)}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{S.view=b.dataset.v;render();scrollTo(0,0)});
+
+/* ============ ACTUALISATION ============ */
+(()=>{let y0=null;const p=$('#ptr');
+addEventListener('touchstart',e=>{y0=scrollY===0?e.touches[0].clientY:null},{passive:true});
+addEventListener('touchmove',e=>{if(y0!==null&&e.touches[0].clientY-y0>80)p.classList.add('on')},{passive:true});
+addEventListener('touchend',async()=>{if(p.classList.contains('on')){await load(true);setTimeout(()=>p.classList.remove('on'),400)}y0=null});})();
+function schedule(){setTimeout(async()=>{if(!document.hidden)await load(false);schedule()},S.ev[S.lg].some(e=>e.st==='live')?60e3:300e3)}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-(S.upd[S.lg]||0)>60e3)load(false)});
+render();load(false).then(schedule);
+</script>
+</body>
+</html>
