@@ -1,0 +1,183 @@
+{
+ "season": "2026-2027",
+ "update": "2026-10-21",
+ "source": "https://en.wikipedia.org/wiki/2026%E2%80%9327_Botola_Pro",
+ "rows": [
+  {
+   "n": "KAC Marrakech",
+   "p": 4,
+   "w": 3,
+   "d": 0,
+   "l": 1,
+   "gf": 6,
+   "ga": 4,
+   "pts": 9,
+   "b": ""
+  },
+  {
+   "n": "COD Meknes",
+   "p": 4,
+   "w": 2,
+   "d": 1,
+   "l": 1,
+   "gf": 7,
+   "ga": 3,
+   "pts": 7,
+   "b": "https://r2.thesportsdb.com/images/media/team/badge/up66n11791791189.png"
+  },
+  {
+   "n": "IR Tanger",
+   "p": 4,
+   "w": 2,
+   "d": 1,
+   "l": 1,
+   "gf": 7,
+   "ga": 5,
+   "pts": 7,
+   "b": "https://r2.thesportsdb.com/images/media/team/badge/mv4lnb1551975475.png"
+  },
+  {
+   "n": "MAS Fez",
+   "p": 4,
+   "w": 2,
+   "d": 1,
+   "l": 1,
+   "gf": 5,
+   "ga": 4,
+   "pts": 7,
+   "b": ""
+  },
+  {
+   "n": "HUS Agadir",
+   "p": 4,
+   "w": 2,
+   "d": 1,
+   "l": 1,
+   "gf": 11,
+   "ga": 8,
+   "pts": 7,
+   "b": ""
+  },
+  {
+   "n": "UTS Rabat",
+   "p": 4,
+   "w": 2,
+   "d": 1,
+   "l": 1,
+   "gf": 3,
+   "ga": 2,
+   "pts": 7,
+   "b": ""
+  },
+  {
+   "n": "DH El Jadida",
+   "p": 4,
+   "w": 2,
+   "d": 0,
+   "l": 2,
+   "gf": 11,
+   "ga": 11,
+   "pts": 6,
+   "b": ""
+  },
+  {
+   "n": "Raja CA",
+   "p": 3,
+   "w": 1,
+   "d": 2,
+   "l": 0,
+   "gf": 2,
+   "ga": 1,
+   "pts": 5,
+   "b": ""
+  },
+  {
+   "n": "Wydad AC",
+   "p": 4,
+   "w": 1,
+   "d": 2,
+   "l": 1,
+   "gf": 4,
+   "ga": 4,
+   "pts": 5,
+   "b": ""
+  },
+  {
+   "n": "AS FAR",
+   "p": 2,
+   "w": 1,
+   "d": 1,
+   "l": 0,
+   "gf": 3,
+   "ga": 2,
+   "pts": 4,
+   "b": ""
+  },
+  {
+   "n": "US Amal Tiznit",
+   "p": 4,
+   "w": 1,
+   "d": 1,
+   "l": 2,
+   "gf": 5,
+   "ga": 9,
+   "pts": 4,
+   "b": ""
+  },
+  {
+   "n": "RS Berkane",
+   "p": 3,
+   "w": 0,
+   "d": 3,
+   "l": 0,
+   "gf": 2,
+   "ga": 2,
+   "pts": 3,
+   "b": ""
+  },
+  {
+   "n": "MA Tétouan",
+   "p": 4,
+   "w": 0,
+   "d": 3,
+   "l": 1,
+   "gf": 2,
+   "ga": 5,
+   "pts": 3,
+   "b": ""
+  },
+  {
+   "n": "WS Temara",
+   "p": 4,
+   "w": 1,
+   "d": 0,
+   "l": 3,
+   "gf": 3,
+   "ga": 4,
+   "pts": 3,
+   "b": ""
+  },
+  {
+   "n": "FUS Rabat",
+   "p": 4,
+   "w": 0,
+   "d": 2,
+   "l": 2,
+   "gf": 2,
+   "ga": 4,
+   "pts": 2,
+   "b": ""
+  },
+  {
+   "n": "RCA Zemamra",
+   "p": 4,
+   "w": 0,
+   "d": 1,
+   "l": 3,
+   "gf": 5,
+   "ga": 10,
+   "pts": 1,
+   "b": ""
+  }
+ ]
+}
