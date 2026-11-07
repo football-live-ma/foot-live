@@ -10,8 +10,15 @@
 <meta name="apple-mobile-web-app-title" content="Foot Live">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23c1272d'/%3E%3Ctext x='50' y='68' font-size='56' text-anchor='middle'%3E%E2%9A%BD%3C/text%3E%3C/svg%3E">
 <title>Foot Live</title>
+<script>/* appliquer le thème avant l'affichage (évite un flash) */try{const t=JSON.parse(localStorage.getItem('theme')||'"auto"');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>
-:root{--bg:#0b1410;--card:#13201a;--line:#1f3128;--txt:#eaf3ee;--mut:#8aa396;--acc:#c1272d;--grn:#1f9d55;--live:#ff3b30}
+:root{--bg:#0b1410;--card:#13201a;--line:#1f3128;--txt:#eaf3ee;--mut:#8aa396;--acc:#c1272d;--grn:#1f9d55;--live:#ff3b30;
+  --nav:#0e1a14;--press:#182a21;--phbg:#2a4136;--phtx:#cfe3d8;--tvbg:#0e2a1b;--tvtx:#7ee2a8;--field:#0b1410;--strong:#fff;--link:#ffd34d;--fav:#ffd34d;color-scheme:dark}
+/* thème clair : choisi dans l'app, ou automatique si le téléphone est en mode clair */
+:root[data-theme=light]{--bg:#f2f5f3;--card:#fff;--line:#dbe4df;--txt:#13201a;--mut:#5b7065;--nav:#fff;--press:#eef3f0;--phbg:#dfe8e3;--phtx:#2a4136;--tvbg:#e2f4e9;--tvtx:#0f6b38;--field:#fff;--strong:#000;--link:#a15c00;--fav:#c98a00;--live:#d70015;color-scheme:light}
+@media(prefers-color-scheme:light){:root:not([data-theme]){--bg:#f2f5f3;--card:#fff;--line:#dbe4df;--txt:#13201a;--mut:#5b7065;--nav:#fff;--press:#eef3f0;--phbg:#dfe8e3;--phtx:#2a4136;--tvbg:#e2f4e9;--tvtx:#0f6b38;--field:#fff;--strong:#000;--link:#a15c00;--fav:#c98a00;--live:#d70015;color-scheme:light}}
+#theme{background:rgba(0,0,0,.22);border:0;color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;flex:none}
+.seg{display:flex;gap:6px;margin-top:8px}.seg button{flex:1}
 *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
 body{background:var(--bg);color:var(--txt);font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:calc(64px + env(safe-area-inset-bottom));overscroll-behavior-y:contain}
@@ -25,10 +32,10 @@ header{position:sticky;top:0;z-index:6;background:linear-gradient(135deg,#7a1519
 .lg::-webkit-scrollbar{display:none}
 .lg div{white-space:nowrap;min-height:36px;display:flex;align-items:center;padding:0 14px;border-radius:99px;background:rgba(0,0,0,.25);color:#fff;font-size:14px;cursor:pointer}
 .lg div.on{background:#fff;color:#7a1519;font-weight:600}
-nav{position:fixed;bottom:0;left:0;right:0;padding-bottom:env(safe-area-inset-bottom);display:flex;background:#0e1a14;border-top:1px solid var(--line);z-index:5}
+nav{position:fixed;bottom:0;left:0;right:0;padding-bottom:env(safe-area-inset-bottom);display:flex;background:var(--nav);border-top:1px solid var(--line);z-index:5}
 nav button{flex:1;min-height:52px;padding:8px 4px;background:none;border:0;color:var(--mut);font-size:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
 nav button span{font-size:20px;line-height:1}
-nav button.on{color:#fff;border-top:2px solid var(--acc);margin-top:-1px}
+nav button.on{color:var(--txt);border-top:2px solid var(--acc);margin-top:-1px}
 main{max-width:760px;margin:0 auto;padding:12px calc(12px + env(safe-area-inset-right)) 12px calc(12px + env(safe-area-inset-left))}
 .bar{display:flex;gap:8px;margin-bottom:10px}
 .bar input,.bar select{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);color:var(--txt);min-height:44px;padding:9px;border-radius:10px;font-size:16px}
@@ -38,26 +45,25 @@ main{max-width:760px;margin:0 auto;padding:12px calc(12px + env(safe-area-inset-
 .chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .day{margin:14px 0 6px;color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
 .m{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
-.m:active{background:#182a21}
+.m:active{background:var(--press)}
 .row{display:flex;align-items:center;gap:8px}
 .t{flex:1;display:flex;align-items:center;gap:6px;min-width:0;flex-direction:column;text-align:center;font-size:13px}
 .t span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.2;word-break:break-word}
 .t img{width:34px;height:34px;object-fit:contain}
-.ph{width:34px;height:34px;border-radius:50%;background:#2a4136;display:inline-flex;align-items:center;justify-content:center;flex:none;font-style:normal;font-weight:700;font-size:11px;color:#cfe3d8;letter-spacing:.02em}
+.ph{width:34px;height:34px;border-radius:50%;background:var(--phbg);display:inline-flex;align-items:center;justify-content:center;flex:none;font-style:normal;font-weight:700;font-size:11px;color:var(--phtx);letter-spacing:.02em}
 .mini{background:var(--card);border:1px solid var(--line);color:var(--txt);min-height:44px;padding:0 12px;border-radius:10px;font-size:14px;cursor:pointer;white-space:nowrap}
 .mini.on{background:var(--acc);border-color:var(--acc);color:#fff}
-.bar input[type=date]{color-scheme:dark}
-.lgt{color:#cfe3d8}
+.lgt{color:var(--phtx)}
 .sc{min-width:64px;text-align:center;font-weight:700;font-size:17px}
 .sc small{display:block;font-weight:400;font-size:11px;color:var(--mut)}
 .live{color:var(--live)}
 .live::before{content:"● ";animation:b 1s infinite}
 @keyframes b{50%{opacity:.2}}
 .meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--mut)}
-.tv{background:#0e2a1b;color:#7ee2a8;border-radius:6px;padding:1px 7px}
+.tv{background:var(--tvbg);color:var(--tvtx);border-radius:6px;padding:1px 7px}
 .det{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:13px;color:var(--mut)}
 .m.open .det{display:block}
-.det a{display:inline-block;padding:8px 0;color:#ffd34d}
+.det a{display:inline-block;padding:8px 0;color:var(--link)}
 h2{font-size:13px;color:var(--mut);margin:14px 0 6px;font-weight:600}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{padding:8px 3px;text-align:center;border-bottom:1px solid var(--line)}
@@ -65,7 +71,7 @@ th{color:var(--mut);font-weight:500;font-size:11px}
 td.n{text-align:left;display:flex;gap:6px;align-items:center}
 td.n img{width:20px;height:20px;object-fit:contain}
 td.n .ph{width:20px;height:20px;font-size:8px}
-td b{color:#fff}
+td b{color:var(--strong)}
 .z1 td:first-child{box-shadow:inset 3px 0 var(--grn)}
 .z2 td:first-child{box-shadow:inset 3px 0 #3b82f6}
 .zr td:first-child{box-shadow:inset 3px 0 var(--live)}
@@ -73,10 +79,10 @@ td b{color:#fff}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
 .panel h3{font-size:14px;margin-bottom:8px}
 .panel label{display:block;font-size:12px;color:var(--mut);margin:8px 0 4px}
-.panel textarea{width:100%;background:#0b1410;border:1px solid var(--line);color:var(--txt);padding:10px;border-radius:10px;font-size:16px}
+.panel textarea{width:100%;background:var(--field);border:1px solid var(--line);color:var(--txt);padding:10px;border-radius:10px;font-size:16px}
 .btn{background:var(--acc);color:#fff;border:0;min-height:44px;padding:0 18px;border-radius:10px;margin-top:10px;cursor:pointer;font-size:15px}
 .empty{text-align:center;color:var(--mut);padding:40px 10px}
-.fav{color:#ffd34d}
+.fav{color:var(--fav)}
 #ptr{position:fixed;top:0;left:0;right:0;text-align:center;background:var(--acc);color:#fff;font-size:12px;padding:4px;transform:translateY(-100%);transition:transform .2s;z-index:9}
 #ptr.on{transform:none}
 @media(max-width:400px){.sc{min-width:58px;font-size:16px}th,td{padding:8px 2px}table{font-size:12px}}
@@ -86,7 +92,7 @@ td b{color:#fff}
 <body>
 <div id="ptr">Actualisation…</div>
 <header>
-  <div class="top"><div style="flex:1"><h1 id="ttl">Foot Live</h1><small id="upd">Chargement…</small></div><div id="dot"></div></div>
+  <div class="top"><div style="flex:1"><h1 id="ttl">Foot Live</h1><small id="upd">Chargement…</small></div><div id="dot"></div><button id="theme" aria-label="Basculer mode clair / sombre" title="Mode clair / sombre">🌙</button></div>
   <div class="lg" id="lg"></div>
 </header>
 <main id="main"></main>
@@ -98,7 +104,7 @@ td b{color:#fff}
 
 <script>
 /* ============ CONFIG (ajouter un championnat = ajouter une ligne) ============ */
-const VERSION='2026-11-07.5'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
+const VERSION='2026-11-07.6'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
 const TZ='Africa/Casablanca';
 const TSDB='https://www.thesportsdb.com/api/v1/json/123/';
 const ESPN='https://site.api.espn.com/apis/site/v2/sports/soccer/';
@@ -333,8 +339,22 @@ function vClassement(){
   const leg=L.leg.map(([c,t])=>`<span style="color:${c}">■ ${t}</span>`).join('');
   return gs.map(tbl).join('')+`<div class="leg">${leg}</div><div class="leg">${calc?'Classement calculé à partir des résultats disponibles':gs[0].src==='wiki'?'Classement complet (source : '+esc(gs[0].srcName||'Wikipédia')+')'+(gs[0].update?', mis à jour le '+esc(new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric'}).format(Date.parse(gs[0].update))):''):L.src==='tsdb'&&gs[0].rows.length<8?'Top '+gs[0].rows.length+' uniquement (limite de la source gratuite)':'Classement officiel'}</div>`}
 
+/* ============ THÈME CLAIR / SOMBRE ============ */
+const mqLight=matchMedia('(prefers-color-scheme: light)');
+const isLight=()=>document.documentElement.dataset.theme?document.documentElement.dataset.theme==='light':mqLight.matches;
+function setTheme(t){ // 'auto' | 'light' | 'dark'
+  store.set('theme',t);
+  if(t==='auto')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=t;
+  render()}
+function themeIcon(){const b=$('#theme');if(b){b.textContent=isLight()?'🌙':'☀️';b.title=isLight()?'Passer en mode sombre':'Passer en mode clair'}}
+mqLight.addEventListener&&mqLight.addEventListener('change',()=>{if(!document.documentElement.dataset.theme)render()});
+
 function vReglages(){
-  return`<div class="panel"><h3>Chaînes TV</h3>
+  const th=store.get('theme','auto');
+  return`<div class="panel"><h3>Apparence</h3><div class="seg">
+  ${[['auto','📱 Automatique'],['light','☀️ Clair'],['dark','🌙 Sombre']].map(([v,l])=>`<button class="mini ${th===v?'on':''}" data-theme="${v}">${l}</button>`).join('')}</div>
+  <label>Automatique = suit le réglage du téléphone.</label></div>
+  <div class="panel"><h3>Chaînes TV</h3>
   <label>Une ligne = « Championnat ou club = Chaîne1, Chaîne2 ». Modifiable à tout moment. Les chaînes par défaut (beIN Sports, Arryadia…) s'ajoutent automatiquement. Exemple : « Wydad Casablanca = Arryadia ».</label>
   <textarea id="tv" rows="5">${esc(S.tvmap)}</textarea><button class="btn" id="st">Enregistrer</button></div>
   <div class="panel"><h3>Favoris</h3><div style="color:var(--mut);font-size:13px">${S.favs.length?S.favs.map(esc).join(', ')+' <a id="cf" style="color:var(--acc);cursor:pointer">· vider</a>':'Ouvrez un match et appuyez sur ★ pour suivre un club.'}</div></div>
@@ -351,6 +371,7 @@ function render(){
   $('#dot').className=e?'err':'ok';
   $('#upd').textContent=S.busy[S.lg]&&!u?'Chargement…':u?'Mis à jour à '+fmtHour(u)+(e?' · hors ligne':''):(e?'Hors ligne':'Chargement…');
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view));
+  themeIcon();
   bind()}
 function bind(){
   document.querySelectorAll('.m').forEach(c=>c.onclick=ev=>{if(!ev.target.closest('[data-fav]'))c.classList.toggle('open')});
@@ -367,7 +388,9 @@ function bind(){
   const st=$('#st');if(st)st.onclick=()=>{S.tvmap=$('#tv').value;store.set('tvmap',S.tvmap);render()};
   const cf=$('#cf');if(cf)cf.onclick=()=>{S.favs=[];store.set('favs',[]);render()};
   const rt=$('#rt');if(rt)rt.onclick=()=>load(true);
-  const rf=$('#rf');if(rf)rf.onclick=()=>load(true)}
+  const rf=$('#rf');if(rf)rf.onclick=()=>load(true);
+  document.querySelectorAll('[data-theme]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>setTheme(b.dataset.theme)})}
+$('#theme').onclick=()=>setTheme(isLight()?'dark':'light');
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{S.view=b.dataset.v;render();scrollTo(0,0)});
 
 /* ============ ACTUALISATION ============ */
