@@ -28,9 +28,16 @@ async function get(url) {
   return JSON.parse(t);
 }
 
-async function fotmob(q) {
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ');
+const GENERIC = new Set('club sportif sportive sport sports fc sc cd ac as cs ud de du des la le les et of the football united city association associacao athletic atletico olympique olympic real union stade'.split(' '));
+const keyWords = n => norm(n).split(/\s+/).filter(w => w.length >= 3 && !GENERIC.has(w));
+
+// strict = le nom trouvé doit partager un mot important avec le nom cherché (évite les faux logos)
+async function fotmob(q, original) {
   const d = await get(`https://www.fotmob.com/api/data/search/suggest?term=${encodeURIComponent(q)}&lang=en`);
-  const team = (d[0]?.suggestions || []).find(s => s.type === 'team');
+  const teams = (d[0]?.suggestions || []).filter(s => s.type === 'team');
+  const want = keyWords(original);
+  const team = teams.find(t => !want.length || keyWords(t.name).some(w => want.some(x => x === w || (x.length >= 5 && (x.startsWith(w) || w.startsWith(x))))));
   return team ? fotmobLogo(team.id) : '';
 }
 async function tsdb(q) {
@@ -42,12 +49,13 @@ async function tsdb(q) {
 // 1. Équipes à couvrir : CAF (ESPN, sans logos), Botola (TheSportsDB + botola.json)
 const names = new Set();
 const y = new Date().getUTCFullYear();
-for (const yy of [y - 1, y, y + 1]) {
-  try {
-    const d = await get(`${ESPN}caf.champions/scoreboard?dates=${yy}&limit=1000`);
-    for (const e of d.events || []) for (const c of (e.competitions?.[0]?.competitors || [])) names.add(c.team.displayName);
-  } catch (e) { console.warn('ESPN', yy, e.message); }
-}
+for (const slug of ['caf.champions', 'caf.confed'])
+  for (const yy of [y - 1, y, y + 1]) {
+    try {
+      const d = await get(`${ESPN}${slug}/scoreboard?dates=${yy}&limit=1000`);
+      for (const e of d.events || []) for (const c of (e.competitions?.[0]?.competitors || [])) names.add(c.team.displayName);
+    } catch (e) { console.warn('ESPN', slug, yy, e.message); }
+  }
 let botolaLogos = {};
 try { for (const r of JSON.parse(await readFile(BOTOLA, 'utf8')).rows || []) if (r.b) botolaLogos[r.n] = r.b; } catch {}
 try {
@@ -60,8 +68,9 @@ let logos = {};
 try { logos = JSON.parse(await readFile(OUT, 'utf8')); } catch {}
 Object.assign(logos, botolaLogos);
 const variants = n => [...new Set([ALIAS[n], n,
-  n.replace(/\b(FC|SC|AC|AS|CF|CS|RSB|Club|Sportiv|Sporting)\b\.?/gi, ' ').replace(/\s+/g, ' ').trim()])]
-  .filter(v => v && v.length > 2);
+  n.replace(/\b(FC|SC|AC|AS|CF|CS|RSB|Club|Sportiv|Sporting)\b\.?/gi, ' ').replace(/[.]/g, ' ').replace(/\s+/g, ' ').trim(),
+  ...keyWords(n).sort((a, b) => b.length - a.length).slice(0, 2)])]
+  .filter(v => v && v.length > 2 && !/^TBD/i.test(n));
 
 let tried = 0, found = 0, tsdbOk = true;
 for (const n of [...names].filter(Boolean).sort()) {
@@ -69,7 +78,7 @@ for (const n of [...names].filter(Boolean).sort()) {
   tried++;
   let url = '';
   for (const v of variants(n)) {
-    try { url = await fotmob(v); } catch (e) { console.warn('FotMob', n, e.message); }
+    try { url = await fotmob(v, n); } catch (e) { console.warn('FotMob', n, e.message); }
     await sleep(800);
     if (url) break;
   }
