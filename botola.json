@@ -1,6 +1,6 @@
 {
  "season": "2026-2027",
- "update": "2026-11-07",
+ "update": "2026-11-08",
  "source": "https://www.fotmob.com/leagues/530/table",
  "rows": [
   {
@@ -26,6 +26,28 @@
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102032.png"
   },
   {
+   "n": "Raja Casablanca",
+   "p": 7,
+   "w": 3,
+   "d": 3,
+   "l": 1,
+   "gf": 7,
+   "ga": 5,
+   "pts": 12,
+   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102049.png"
+  },
+  {
+   "n": "FAR Rabat",
+   "p": 6,
+   "w": 3,
+   "d": 2,
+   "l": 1,
+   "gf": 9,
+   "ga": 5,
+   "pts": 11,
+   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102035.png"
+  },
+  {
    "n": "Wydad Casablanca",
    "p": 7,
    "w": 3,
@@ -48,26 +70,26 @@
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102043.png"
   },
   {
-   "n": "Ittihad Tanger",
-   "p": 6,
+   "n": "Widad Temara",
+   "p": 7,
    "w": 3,
    "d": 1,
-   "l": 2,
+   "l": 3,
    "gf": 8,
-   "ga": 7,
+   "ga": 5,
    "pts": 10,
-   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/316657.png"
+   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/570488.png"
   },
   {
-   "n": "Widad Temara",
-   "p": 6,
+   "n": "Ittihad Tanger",
+   "p": 7,
    "w": 3,
-   "d": 0,
+   "d": 1,
    "l": 3,
-   "gf": 7,
-   "ga": 4,
-   "pts": 9,
-   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/570488.png"
+   "gf": 8,
+   "ga": 9,
+   "pts": 10,
+   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/316657.png"
   },
   {
    "n": "Hassania Agadir",
@@ -81,39 +103,6 @@
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102037.png"
   },
   {
-   "n": "Raja Casablanca",
-   "p": 6,
-   "w": 2,
-   "d": 3,
-   "l": 1,
-   "gf": 5,
-   "ga": 5,
-   "pts": 9,
-   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102049.png"
-  },
-  {
-   "n": "FAR Rabat",
-   "p": 5,
-   "w": 2,
-   "d": 2,
-   "l": 1,
-   "gf": 6,
-   "ga": 4,
-   "pts": 8,
-   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102035.png"
-  },
-  {
-   "n": "Difaâ El Jadida",
-   "p": 6,
-   "w": 2,
-   "d": 2,
-   "l": 2,
-   "gf": 13,
-   "ga": 13,
-   "pts": 8,
-   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102033.png"
-  },
-  {
    "n": "FUS Rabat",
    "p": 7,
    "w": 2,
@@ -123,6 +112,17 @@
    "ga": 5,
    "pts": 8,
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102036.png"
+  },
+  {
+   "n": "Difaâ El Jadida",
+   "p": 7,
+   "w": 2,
+   "d": 2,
+   "l": 3,
+   "gf": 14,
+   "ga": 16,
+   "pts": 8,
+   "b": "https://images.fotmob.com/image_resources/logo/teamlogo/102033.png"
   },
   {
    "n": "Union Touarga Sport",
@@ -170,13 +170,13 @@
   },
   {
    "n": "Renaissance Club Zemamra",
-   "p": 6,
+   "p": 7,
    "w": 0,
-   "d": 1,
+   "d": 2,
    "l": 5,
-   "gf": 5,
-   "ga": 12,
-   "pts": 1,
+   "gf": 6,
+   "ga": 13,
+   "pts": 2,
    "b": "https://images.fotmob.com/image_resources/logo/teamlogo/950070.png"
   }
  ]
