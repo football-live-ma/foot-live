@@ -104,7 +104,7 @@ td b{color:var(--strong)}
 
 <script>
 /* ============ CONFIG (ajouter un championnat = ajouter une ligne) ============ */
-const VERSION='2026-11-07.6'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
+const VERSION='2026-11-10.1'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
 const TZ='Africa/Casablanca';
 const TSDB='https://www.thesportsdb.com/api/v1/json/123/';
 const ESPN='https://site.api.espn.com/apis/site/v2/sports/soccer/';
@@ -115,6 +115,7 @@ const LEAGUES={
   cafc:{flag:'🏆',short:'Coupe Confédération',name:'Coupe de la Confédération CAF',src:'espn',slug:'caf.confed',tvKey:'coupe de la confederation',tvDef:['Arryadia / beIN Sports (selon match)'],zones:{a:2,b:0,r:0},leg:[['var(--grn)','Qualifiés (2 premiers de chaque groupe)']]},
   ucl:{flag:'🇪🇺',short:'Ligue des champions',name:'UEFA Champions League',src:'espn',slug:'uefa.champions',tvKey:'champions league',tvDef:['beIN Sports'],zones:{a:8,b:16,r:12},leg:[['var(--grn)','Huitièmes directs (1er à 8e)'],['#3b82f6','Barrages (9e à 24e)'],['var(--live)','Éliminés (25e à 36e)']]},
   eng:{flag:'🇬🇧',short:'Premier League',name:'Premier League',src:'espn',slug:'eng.1',tvKey:'premier league',tvDef:['beIN Sports'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
+  esp:{flag:'🇪🇸',short:'LaLiga',name:'LaLiga EA Sports',src:'espn',slug:'esp.1',tvKey:'laliga',tvDef:['beIN Sports'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
   fra:{flag:'🇫🇷',short:'Ligue 1',name:'Ligue 1',src:'espn',slug:'fra.1',tvKey:'ligue 1',tvDef:['beIN Sports'],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]},
   ita:{flag:'🇮🇹',short:'Serie A',name:'Serie A',src:'espn',slug:'ita.1',tvKey:'serie a',tvDef:['StarzPlay'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
   ger:{flag:'🇩🇪',short:'Bundesliga',name:'Bundesliga',src:'espn',slug:'ger.1',tvKey:'bundesliga',tvDef:['Shahid','MBC Action (certains matchs, gratuit)'],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]}
@@ -358,7 +359,7 @@ function vReglages(){
   <label>Une ligne = « Championnat ou club = Chaîne1, Chaîne2 ». Modifiable à tout moment. Les chaînes par défaut (beIN Sports, Arryadia…) s'ajoutent automatiquement. Exemple : « Wydad Casablanca = Arryadia ».</label>
   <textarea id="tv" rows="5">${esc(S.tvmap)}</textarea><button class="btn" id="st">Enregistrer</button></div>
   <div class="panel"><h3>Favoris</h3><div style="color:var(--mut);font-size:13px">${S.favs.length?S.favs.map(esc).join(', ')+' <a id="cf" style="color:var(--acc);cursor:pointer">· vider</a>':'Ouvrez un match et appuyez sur ★ pour suivre un club.'}</div></div>
-  <div class="panel"><h3>Données</h3><div style="color:var(--mut);font-size:13px">Heures affichées : Maroc. Actualisation automatique (1 min en direct, 5 min sinon). Sources gratuites : ESPN (Ligue des champions CAF, Coupe de la Confédération, Ligue des champions, Angleterre, France, Italie, Allemagne) et TheSportsDB (Botola). Chaînes par défaut basées sur les droits de diffusion annoncés pour la région MENA : à vérifier selon ton abonnement.<br>L'application se met à jour toute seule quand une nouvelle version est publiée. Version : ${VERSION}</div><button class="btn" id="rf">Actualiser maintenant</button></div>`}
+  <div class="panel"><h3>Données</h3><div style="color:var(--mut);font-size:13px">Heures affichées : Maroc. Actualisation automatique (1 min en direct, 5 min sinon). Sources gratuites : ESPN (Ligue des champions CAF, Coupe de la Confédération, Ligue des champions, Angleterre, Espagne, France, Italie, Allemagne) et TheSportsDB (Botola). Chaînes par défaut basées sur les droits de diffusion annoncés pour la région MENA : à vérifier selon ton abonnement.<br>L'application se met à jour toute seule quand une nouvelle version est publiée. Version : ${VERSION}</div><button class="btn" id="rf">Actualiser maintenant</button></div>`}
 
 function render(){
   const L=LEAGUES[S.lg];
