@@ -104,7 +104,7 @@ td b{color:var(--strong)}
 
 <script>
 /* ============ CONFIG (ajouter un championnat = ajouter une ligne) ============ */
-const VERSION='2026-11-10.2'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
+const VERSION='2026-11-10.3'; // changer à chaque publication : les téléphones se mettent à jour tout seuls
 const TZ='Africa/Casablanca';
 const TSDB='https://www.thesportsdb.com/api/v1/json/123/';
 const ESPN='https://site.api.espn.com/apis/site/v2/sports/soccer/';
@@ -119,8 +119,8 @@ const LEAGUES={
   fra:{flag:'🇫🇷',short:'Ligue 1',name:'Ligue 1',src:'espn',slug:'fra.1',tvKey:'ligue 1',tvDef:['beIN Sports'],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]},
   ita:{flag:'🇮🇹',short:'Serie A',name:'Serie A',src:'espn',slug:'ita.1',tvKey:'serie a',tvDef:['StarzPlay'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
   ger:{flag:'🇩🇪',short:'Bundesliga',name:'Bundesliga',src:'espn',slug:'ger.1',tvKey:'bundesliga',tvDef:['Shahid','MBC Action (certains matchs, gratuit)'],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]},
-  bra:{flag:'🇧🇷',short:'Brasileirão',name:'Brasileirão Série A',src:'espn',slug:'bra.1',tvKey:'brasileirao',tvDef:[],zones:{a:4,b:2,r:4},leg:[['var(--grn)','Copa Libertadores (1er à 4e)'],['#3b82f6','Libertadores, tours préliminaires (5e-6e)'],['var(--live)','Relégation (4 derniers)']]},
-  usa:{flag:'🇺🇸',short:'MLS',name:'Major League Soccer',src:'espn',slug:'usa.1',tvKey:'mls',tvDef:['Apple TV (MLS Season Pass)'],zones:{a:7,b:2,r:0},leg:[['var(--grn)','Playoffs directs (1er à 7e)'],['#3b82f6','Wild card (8e-9e)']]}
+  bra:{flag:'🇧🇷',short:'Brasileirão',name:'Brasileirão Série A',src:'espn',slug:'bra.1',tvKey:'brasileirao',tvDef:['Dubai Sports','Fanatiz','YouTube'],zones:{a:4,b:2,r:4},leg:[['var(--grn)','Copa Libertadores (1er à 4e)'],['#3b82f6','Libertadores, tours préliminaires (5e-6e)'],['var(--live)','Relégation (4 derniers)']]},
+  usa:{flag:'🇺🇸',short:'MLS',name:'Major League Soccer',src:'espn',slug:'usa.1',tvKey:'mls',tvDef:['Apple TV'],zones:{a:7,b:2,r:0},leg:[['var(--grn)','Playoffs directs (1er à 7e)'],['#3b82f6','Wild card (8e-9e)']]}
 };
 const STAGES={'first-preliminary-round':'Tour préliminaire 1','second-preliminary-round':'Tour préliminaire 2','group-stage':'Phase de groupes','league-phase':'Phase de ligue','knockout-round-playoffs':'Barrages','round-of-16':'8es de finale','quarterfinals':'Quarts de finale','semifinals':'Demi-finales','finals':'Finale','final':'Finale'};
 
