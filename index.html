@@ -210,7 +210,8 @@ async function loadTsdb(k,full){
   if(!S.tb[k]||full||Date.now()-(S.upd[k]||0)>6e5){
     try{const d=await jget(`${TSDB}lookuptable.php?l=${L.id}&s=${season()}`,1);
       if(d&&d.table&&d.table.length)S.tb[k]=[{name:'',rows:d.table.map(r=>({n:r.strTeam,b:r.strBadge||r.strTeamBadge||'',p:+r.intPlayed,w:+r.intWin,d:+r.intDraw,l:+r.intLoss,gf:+r.intGoalsFor,ga:+r.intGoalsAgainst,pts:+r.intPoints}))}]}catch(e){}
-    try{const key='rounds_'+k+'_'+season(),rd=store.get(key,{}),all=[],now=Date.now();
+    try{if(k==='botola'){const bj=await jget('botola.json?t='+Date.now(),1);if(bj&&bj.rows&&bj.rows.length>=10)S.tb[k]=[{name:'',rows:bj.rows}]}}catch(e){}
+    if(((S.tb[k]||[{rows:[]}])[0].rows.length)<10)try{const key='rounds_'+k+'_'+season(),rd=store.get(key,{}),all=[],now=Date.now();
       for(let r=1;r<=40;r++){let ev=rd[r];
         const done=ev&&ev.length&&ev.every(e=>fromTsdb(e).st==='fin');
         if(!done){if(ev&&ev.length&&Math.min(...ev.map(e=>fromTsdb(e).ts))>now)break;
