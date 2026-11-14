@@ -209,7 +209,17 @@ async function loadTsdb(k,full){
   store.set('days_'+k,keep);S.ev[k]=mergeDays(keep);
   if(!S.tb[k]||full||Date.now()-(S.upd[k]||0)>6e5){
     try{const d=await jget(`${TSDB}lookuptable.php?l=${L.id}&s=${season()}`,1);
-      if(d&&d.table&&d.table.length)S.tb[k]=[{name:'',rows:d.table.map(r=>({n:r.strTeam,b:r.strBadge||r.strTeamBadge||'',p:+r.intPlayed,w:+r.intWin,d:+r.intDraw,l:+r.intLoss,gf:+r.intGoalsFor,ga:+r.intGoalsAgainst,pts:+r.intPoints}))}]}catch(e){}}
+      if(d&&d.table&&d.table.length)S.tb[k]=[{name:'',rows:d.table.map(r=>({n:r.strTeam,b:r.strBadge||r.strTeamBadge||'',p:+r.intPlayed,w:+r.intWin,d:+r.intDraw,l:+r.intLoss,gf:+r.intGoalsFor,ga:+r.intGoalsAgainst,pts:+r.intPoints}))}]}catch(e){}
+    try{const key='rounds_'+k+'_'+season(),rd=store.get(key,{}),all=[],now=Date.now();
+      for(let r=1;r<=40;r++){let ev=rd[r];
+        const done=ev&&ev.length&&ev.every(e=>fromTsdb(e).st==='fin');
+        if(!done){if(ev&&ev.length&&Math.min(...ev.map(e=>fromTsdb(e).ts))>now)break;
+          try{const x=await jget(`${TSDB}eventsround.php?id=${L.id}&r=${r}&s=${season()}`,4);ev=x.events||[]}catch(e){if(!ev)break}
+          await sleep(400)}
+        if(!ev||!ev.length)break;rd[r]=ev;all.push(...ev.map(fromTsdb))}
+      store.set(key,rd);
+      const sv=S.ev[k];S.ev[k]=all;const tb=computeTable(k);S.ev[k]=sv;
+      if(tb[0].rows.length>((S.tb[k]||[{rows:[]}])[0].rows.length))S.tb[k]=tb}catch(e){}}
   if(fails&&!S.ev[k].length)throw last||new Error('réseau')}
 async function load(full,kk){
   const k=kk||S.lg;if(S.busy[k])return;S.busy[k]=true;S.err[k]=null;render();
