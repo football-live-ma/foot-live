@@ -107,7 +107,8 @@ const LEAGUES={
   ita:{flag:'🇮🇹',short:'Serie A',name:'Serie A',src:'espn',slug:'ita.1',tvKey:'serie a',tvDef:['StarzPlay'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
   afq:{flag:'🏅',short:'Éliminatoires CAN',name:'Éliminatoires Coupe d\'Afrique (CAN)',src:'espn',slug:'caf.nations_qual',noSeason:true,tvKey:'eliminatoires can',tvDef:[],zones:{a:0,b:0,r:0},leg:[]},
   nat:{flag:'🏆',short:'Nations League',name:'UEFA Nations League',src:'espn',slug:'uefa.nations',tvKey:'nations league',tvDef:[],zones:{a:1,b:0,r:0},leg:[['var(--grn)','1er de groupe']]},
-  ger:{flag:'🇩🇪',short:'Bundesliga',name:'Bundesliga',src:'espn',slug:'ger.1',tvKey:'bundesliga',tvDef:[],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]}
+  ger:{flag:'🇩🇪',short:'Bundesliga',name:'Bundesliga',src:'espn',slug:'ger.1',tvKey:'bundesliga',tvDef:[],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]},
+  nba:{flag:'🏀',short:'NBA',name:'NBA',src:'espn',sport:'basketball',slug:'nba',months:true,noSeason:true,tvKey:'nba',tvDef:['beIN Sports (selon match)'],zones:{a:6,b:4,r:0},leg:[['var(--grn)','Playoffs directs (1er à 6e)'],['#3b82f6','Play-in (7e à 10e)']]}
 };
 const STAGES={'first-preliminary-round':'Tour préliminaire 1','second-preliminary-round':'Tour préliminaire 2','group-stage':'Phase de groupes','league-phase':'Phase de ligue','knockout-round-playoffs':'Barrages','round-of-16':'8es de finale','quarterfinals':'Quarts de finale','semifinals':'Demi-finales','finals':'Finale','final':'Finale','preliminary-round':'Tour préliminaire','relegation-playoffs':'Barrages de relégation','promotion-playoffs':'Barrages de promotion'};
 
@@ -173,7 +174,9 @@ function fromTsdb(e){
 async function loadEspn(k){
   const L=LEAGUES[k],y=new Date().getFullYear(),map=new Map();
   let ok=0,last=null,t0=0,t1=Infinity;
-  const res=await Promise.allSettled([y,y+1].map(yy=>jget(`${ESPN}${L.slug}/scoreboard?dates=${yy}&limit=1000`,2)));
+  const base=L.sport?ESPN.replace('/soccer/','/'+L.sport+'/'):ESPN;
+  const dl=L.months?[-1,0,1,2].map(o=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+o);return d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')}):[y,y+1];
+  const res=await Promise.allSettled(dl.map(yy=>jget(`${base}${L.slug}/scoreboard?dates=${yy}&limit=1000`,2)));
   res.forEach((r,n)=>{
     if(r.status!=='fulfilled'){last=r.reason;return}
     const d=r.value;ok++;const se=((d.leagues||[])[0]||{}).season;
@@ -182,11 +185,11 @@ async function loadEspn(k){
   if(!ok)throw last||new Error('réseau');
   S.ev[k]=[...map.values()].filter(e=>e.ts>=t0&&e.ts<=t1).sort((a,b)=>a.ts-b.ts);
   try{
-    const d=await jget(`${ESPN_ST}${L.slug}/standings`,1);
+    const d=await jget(`${L.sport?ESPN_ST.replace('/soccer/','/'+L.sport+'/'):ESPN_ST}${L.slug}/standings`,1);
     const num=(x,n)=>{const s=(x.stats||[]).find(z=>z.name===n);return s?(s.value??parseFloat(s.displayValue))||0:0};
     const ch=d.children||[];S.tb[k]=ch.map(g=>({name:ch.length>1?(g.name||'').split(' - ').pop().replace('Group','Groupe'):'',rows:((g.standings||{}).entries||[]).map(x=>({
       n:x.team.displayName,b:((x.team.logos||[])[0]||{}).href||'',p:num(x,'gamesPlayed'),w:num(x,'wins'),d:num(x,'ties'),l:num(x,'losses'),
-      gf:num(x,'pointsFor'),ga:num(x,'pointsAgainst'),pts:num(x,'points')})).sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga))})).filter(g=>g.rows.length)
+      gf:num(x,'pointsFor'),ga:num(x,'pointsAgainst'),pts:L.sport?num(x,'wins'):num(x,'points'),wp:num(x,'winPercent')})).sort((a,b)=>L.sport?b.wp-a.wp||b.pts-a.pts:b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga))})).filter(g=>g.rows.length)
     if(S.tb[k]&&S.tb[k].length>1){const gm={};S.tb[k].forEach(g=>g.rows.forEach(r=>gm[r.n]=g.name));
       S.ev[k].forEach(e=>{if(e.rk==='league-phase'||e.rk==='group-stage'){const g=gm[e.home]||gm[e.away];if(g)e.rl=g}})}
   }catch(e){}}
