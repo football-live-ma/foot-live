@@ -197,7 +197,7 @@ function mergeDays(days){const m=new Map();Object.values(days).flat().forEach(e=
 async function loadTsdb(k,full){
   const L=LEAGUES[k],days=store.get('days_'+k,{}),win=[];
   for(let o=-7;o<=14;o++)win.push(ymd(o));
-  const list=(!full&&Object.keys(days).length)?win.filter(d=>d>=ymd(-1)&&d<=ymd(1)):win.filter(d=>full||!days[d]||d>=ymd(-1));
+  const list=(!full&&Object.keys(days).length)?win.filter(d=>(d>=ymd(-1)&&d<=ymd(1))||(d<ymd(-1)&&(days[d]||[]).some(e=>fromTsdb(e).st!=='fin'))):win.filter(d=>full||!days[d]||d>=ymd(-1));
   let fails=0,last=null;
   for(let i=0;i<list.length;i+=4){
     await Promise.all(list.slice(i,i+4).map(async d=>{
