@@ -187,8 +187,8 @@ async function loadEspn(k){
   try{
     const d=await jget(`${L.sport?ESPN_ST.replace('/soccer/','/'+L.sport+'/'):ESPN_ST}${L.slug}/standings`,1);
     const num=(x,n)=>{const s=(x.stats||[]).find(z=>z.name===n);return s?(s.value??parseFloat(s.displayValue))||0:0};
-    const ch=d.children||[];S.tb[k]=ch.map(g=>({name:ch.length>1?(g.name||'').split(' - ').pop().replace('Group','Groupe'):'',rows:((g.standings||{}).entries||[]).map(x=>({
-      n:x.team.displayName,b:((x.team.logos||[])[0]||{}).href||'',p:num(x,'gamesPlayed'),w:num(x,'wins'),d:num(x,'ties'),l:num(x,'losses'),
+    const ch=d.children||[];S.tb[k]=ch.map(g=>({name:ch.length>1?(g.name||'').split(' - ').pop().replace('Group','Groupe').replace('Eastern Conference','Conférence Est').replace('Western Conference','Conférence Ouest'):'',rows:((g.standings||{}).entries||[]).map(x=>({
+      n:x.team.displayName,b:((x.team.logos||[])[0]||{}).href||'',p:num(x,'gamesPlayed')||num(x,'wins')+num(x,'losses'),w:num(x,'wins'),d:num(x,'ties'),l:num(x,'losses'),
       gf:num(x,'pointsFor'),ga:num(x,'pointsAgainst'),pts:L.sport?num(x,'wins'):num(x,'points'),wp:num(x,'winPercent')})).sort((a,b)=>L.sport?b.wp-a.wp||b.pts-a.pts:b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga))})).filter(g=>g.rows.length)
     if(S.tb[k]&&S.tb[k].length>1){const gm={};S.tb[k].forEach(g=>g.rows.forEach(r=>gm[r.n]=g.name));
       S.ev[k].forEach(e=>{if(e.rk==='league-phase'||e.rk==='group-stage'){const g=gm[e.home]||gm[e.away];if(g)e.rl=g}})}
