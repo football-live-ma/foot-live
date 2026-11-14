@@ -232,15 +232,16 @@ function channels(e){
   S.tvmap.split('\n').forEach(l=>{const[k,v]=l.split('=').map(x=>x&&x.trim());
     if(k&&v&&[L.tvKey,e.home.toLowerCase(),e.away.toLowerCase()].includes(k.toLowerCase()))v.split(/[,;/]/).forEach(x=>x.trim()&&out.add(x.trim()))});
   return[...out]}
-const badge=u=>u?`<img src="${esc(u)}" loading="lazy" onerror="this.outerHTML='<i class=ph></i>'">`:'<i class="ph"></i>';
+let LOGOS={};fetch('logos.json').then(r=>r.json()).then(j=>{LOGOS=j||{};render()}).catch(()=>{});
+const badge=(u,n)=>{const a=(n&&LOGOS[n])||'',s=a||u;if(!s)return '<i class="ph"></i>';const alt=(a&&u&&a!==u)?u:'';return `<img src="${esc(s)}" loading="lazy"${alt?` data-alt="${esc(alt)}"`:''} onerror="if(this.dataset.alt){this.src=this.dataset.alt;this.removeAttribute('data-alt')}else{this.outerHTML='<i class=ph></i>'}">`};
 function card(e){
   const live=e.st==='live',fin=e.st==='fin',ch=channels(e);
   const sc=(live||fin)&&e.hs!=null&&!isNaN(e.hs)?`${e.hs} - ${e.as}`:fmtHour(e.ts);
   const sub=live?`<span class="live">${esc(e.prog)}</span>`:esc(e.prog||(fin?'Terminé':''));
   const fh=S.favs.includes(e.home)||S.favs.includes(e.away);
-  return`<div class="m"><div class="row"><div class="t">${badge(e.hb)}<span>${esc(e.home)}</span></div>
+  return`<div class="m"><div class="row"><div class="t">${badge(e.hb,e.home)}<span>${esc(e.home)}</span></div>
   <div class="sc">${sc}<small>${sub}</small></div>
-  <div class="t r">${badge(e.ab)}<span>${esc(e.away)}</span></div></div>
+  <div class="t r">${badge(e.ab,e.away)}<span>${esc(e.away)}</span></div></div>
   <div class="meta">${fh?'<span class="fav">★</span>':''}${e.rl?`<span>${esc(e.rl)}</span>`:''}${ch.map(c=>`<span class="tv">📺 ${esc(c)}</span>`).join('')}${e.venue?`<span>🏟 ${esc(e.venue)}</span>`:''}</div>
   <div class="det">📅 ${esc(fmtDay(e.ts))} à ${fmtHour(e.ts)} (heure du Maroc)<br>
   ${e.venue?'🏟 '+esc(e.venue)+(e.city?', '+esc(e.city):'')+'<br>':''}
@@ -277,7 +278,7 @@ function vClassement(){
   if(!gs[0].rows.length)return'<div class="empty">Classement indisponible pour l\'instant.</div>';
   const tbl=g=>{const n=g.rows.length;return`${g.name?`<h2>${esc(g.name)}</h2>`:''}<table><tr><th>#</th><th style="text-align:left">Club</th><th>J</th><th>G</th><th>N</th><th>P</th><th>+/-</th><th>Pts</th></tr>
   ${g.rows.map((r,i)=>`<tr class="${i<L.zones.a?'z1':i<L.zones.a+L.zones.b?'z2':L.zones.r&&i>=n-L.zones.r?'zr':''}"><td>${i+1}</td>
-  <td class="n">${badge(r.b)}${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table>`};
+  <td class="n">${badge(r.b,r.n)}${esc(r.n)}</td><td>${r.p}</td><td>${r.w}</td><td>${r.d}</td><td>${r.l}</td><td>${r.gf-r.ga>0?'+':''}${r.gf-r.ga}</td><td><b>${r.pts}</b></td></tr>`).join('')}</table>`};
   const leg=L.leg.map(([c,t])=>`<span style="color:${c}">■ ${t}</span>`).join('');
   return gs.map(tbl).join('')+`<div class="leg">${leg}</div><div class="leg">${calc?'Classement calculé à partir des résultats disponibles':'Classement officiel'}</div>`}
 
