@@ -92,6 +92,19 @@ td b{color:#fff}
 <button data-v="reglages"><span>⚙️</span>Réglages</button>
 </nav>
 
+<script>/* filet de sécurité : jamais d'écran vide */
+(function(){
+ if(!Promise.allSettled)Promise.allSettled=function(a){return Promise.all(a.map(function(p){return Promise.resolve(p).then(function(v){return{status:'fulfilled',value:v}},function(r){return{status:'rejected',reason:r}})}))};
+ var shown=0;
+ window.addEventListener('error',function(ev){
+  if(shown||(ev.target&&ev.target!==window))return;shown=1;
+  var m=document.getElementById('main');if(!m)return;
+  var d=document.createElement('div');d.style.cssText='margin:16px;padding:16px;border-radius:14px;background:#13201a;color:#eaf3ee;font:15px system-ui,sans-serif';
+  d.innerHTML='<b>Un problème d\'affichage est survenu.</b><br><small style="color:#8aa396">'+String(ev.message||'').replace(/</g,'&lt;')+'</small><br><br><button style="background:#c1272d;color:#fff;border:0;border-radius:10px;padding:12px 18px;font-size:15px">Réparer et recharger</button>';
+  d.querySelector('button').onclick=function(){try{for(var k in localStorage){if(!/^(favs|tvmap)$/.test(k))localStorage.removeItem(k)}}catch(e){}location.replace(location.pathname+'?r='+Date.now())};
+  m.insertBefore(d,m.firstChild)},true);
+})();
+</script>
 <script>
 /* ============ CONFIG (ajouter un championnat = ajouter une ligne) ============ */
 const TZ='Africa/Casablanca';
@@ -101,8 +114,10 @@ const ESPN_ST='https://site.api.espn.com/apis/v2/sports/soccer/';
 const LEAGUES={
   botola:{flag:'🇲🇦',short:'Botola Pro',name:'Botola Pro Inwi',src:'tsdb',id:4520,tvKey:'botola pro',tvDef:['Arryadia'],zones:{a:2,b:2,r:2},leg:[['var(--grn)','Ligue des champions CAF'],['#3b82f6','Coupe de la Confédération'],['var(--live)','Relégation']]},
   caf:{flag:'🌍',short:'CAF Champions League',name:'CAF Champions League',src:'espn',slug:'caf.champions',tvKey:'caf champions league',tvDef:['Arryadia / beIN Sports (selon match)'],zones:{a:2,b:0,r:0},leg:[['var(--grn)','Qualifiés (2 premiers de chaque groupe)']]},
+  cafc:{flag:'🏆',short:'Coupe Confédération',name:'Coupe de la Confédération CAF',src:'espn',slug:'caf.confed',tvKey:'coupe de la confederation',tvDef:['Arryadia / beIN Sports (selon match)'],zones:{a:2,b:0,r:0},leg:[['var(--grn)','Qualifiés (2 premiers de chaque groupe)']]},
   ucl:{flag:'🇪🇺',short:'Ligue des champions',name:'UEFA Champions League',src:'espn',slug:'uefa.champions',tvKey:'champions league',tvDef:['beIN Sports'],zones:{a:8,b:16,r:12},leg:[['var(--grn)','Huitièmes directs (1er à 8e)'],['#3b82f6','Barrages (9e à 24e)'],['var(--live)','Éliminés (25e à 36e)']]},
   eng:{flag:'🇬🇧',short:'Premier League',name:'Premier League',src:'espn',slug:'eng.1',tvKey:'premier league',tvDef:['beIN Sports'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
+  esp:{flag:'🇪🇸',short:'LaLiga',name:'LaLiga EA Sports',src:'espn',slug:'esp.1',tvKey:'laliga',tvDef:['beIN Sports'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
   fra:{flag:'🇫🇷',short:'Ligue 1',name:'Ligue 1',src:'espn',slug:'fra.1',tvKey:'ligue 1',tvDef:['beIN Sports'],zones:{a:0,b:0,r:2},leg:[['var(--live)','Relégation (2 derniers)']]},
   ita:{flag:'🇮🇹',short:'Serie A',name:'Serie A',src:'espn',slug:'ita.1',tvKey:'serie a',tvDef:['StarzPlay'],zones:{a:0,b:0,r:3},leg:[['var(--live)','Relégation (3 derniers)']]},
   afq:{flag:'🏅',short:'Éliminatoires CAN',name:'Éliminatoires Coupe d\'Afrique (CAN)',src:'espn',slug:'caf.nations_qual',noSeason:true,tvKey:'eliminatoires can',tvDef:[],zones:{a:0,b:0,r:0},leg:[]},
@@ -119,10 +134,11 @@ const S={view:'matchs',lg:store.get('lg','botola'),filter:'all',team:'',round:''
   ev:{},tb:{},upd:{},err:{},busy:{},
   tvmap:store.get('tvmap',''),favs:store.get('favs',[])};
 if(!LEAGUES[S.lg])S.lg='botola';
+if(store.get('dv',0)!==3){try{Object.keys(localStorage).forEach(k=>{if(/^(ev_|tb_|days_|up_|rc_|rounds_|logos$|lg$)/.test(k))localStorage.removeItem(k)})}catch(e){}store.set('dv',3);S.lg='botola'}
 for(const k in LEAGUES){S.ev[k]=store.get('ev_'+k,[]);S.tb[k]=store.get('tb_'+k,null);S.upd[k]=store.get('up_'+k,null)}
 
 /* ============ HELPERS ============ */
-const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const ymd=o=>new Intl.DateTimeFormat('en-CA',{timeZone:TZ}).format(Date.now()+o*864e5);
 const fmtDay=t=>new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',timeZone:TZ}).format(t);
@@ -186,7 +202,7 @@ async function loadEspn(k){
   S.ev[k]=[...map.values()].filter(e=>e.ts>=t0&&e.ts<=t1).sort((a,b)=>a.ts-b.ts);
   try{
     const d=await jget(`${L.sport?ESPN_ST.replace('/soccer/','/'+L.sport+'/'):ESPN_ST}${L.slug}/standings`,1);
-    const num=(x,n)=>{const s=(x.stats||[]).find(z=>z.name===n);return s?(s.value??parseFloat(s.displayValue))||0:0};
+    const num=(x,n)=>{const s=(x.stats||[]).find(z=>z.name===n);return s?(s.value!=null?s.value:parseFloat(s.displayValue))||0:0};
     const ch=d.children||[];S.tb[k]=ch.map(g=>({name:ch.length>1?(g.name||'').split(' - ').pop().replace('Group','Groupe').replace('Eastern Conference','Conférence Est').replace('Western Conference','Conférence Ouest'):'',rows:((g.standings||{}).entries||[]).map(x=>({
       n:x.team.displayName,b:((x.team.logos||[])[0]||{}).href||'',p:num(x,'gamesPlayed')||num(x,'wins')+num(x,'losses'),w:num(x,'wins'),d:num(x,'ties'),l:num(x,'losses'),
       gf:num(x,'pointsFor'),ga:num(x,'pointsAgainst'),pts:L.sport?num(x,'wins'):num(x,'points'),wp:num(x,'winPercent')})).sort((a,b)=>L.sport?b.wp-a.wp||b.pts-a.pts:b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga))})).filter(g=>g.rows.length)
